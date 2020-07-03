@@ -6,9 +6,8 @@
 % all other sources
 
 clc
-clear all
 close all
-
+tic
 %% Set Simulation Parameters
 % Define step size and simulation duration (seconds)
 dt = 0.1;
@@ -33,12 +32,10 @@ mu = 30;
 % and 0 when there is no packet.
 event = zeros(numSources,length(t));
 numEvents = zeros(numSources,1);
-figure
-hold on
 
 for i=1:numSources
     % Generate tranmission times for each source
-    event(i,:) = GenerateTransmissions(lambda(i), t, true);
+    event(i,:) = GenerateTransmissions(lambda(i), t);
     
     % Count the number of transmissions for each source
     numEvents(i) = sum(event(i,:)); 
@@ -68,50 +65,19 @@ eventPerSecond = numEvents./tFinal;  % check how close to lambda
 %% Create Vector of Service Slots
 % Set slot width
 % Probability of packet arriving is P = 1 - e^(-lambda*t)
-probability = 0.5;  % Desired probability that a packet is sent during a slot
+probability = 0.8;  % Desired probability that a packet is sent during a slot
 slotDuration = -log(1-probability)./lambda;  % Calculate time from 
 % Take the larger of the calculated durations
 slotDuration = max(slotDuration);
 slotDuration = round(slotDuration/dt) * dt;  % round to same order as time step
 %mu*exp(-mu*t)
 
-%% Calculate when each packet is served
-%{
-serverBusy = false
-S = 0;
-W = 0;
-prevPacket = 0;
-timeRecieve = [];
-for i=1:totalEvents
-    packet = timeTransmit(:,i);
-    % Check if the packet arrived during the correct slot
-    if CheckSlot(packet, numSources, slotDuration)
-        if packet(2) > S + W + prevPacket  % the server is idle
-            % Generate value for S
-            S = exprnd(mu);
-            % Add the source and the total time to timeRecieve
-            recievedPacket = [packet(1); packet(2) + S + W];
-            timeRecieve = [timeRecieve, recievedPacket];
-            % Save the previous packets transmit time
-            prevPacket = packet(2);
-        else  % The server is busy
-            % Set the wait timer
-            W = timeRecieve(2,i-1) - packet(2);
-            S = exprnd(mu);
-            if (S + W + packet(2)
-        
-%}    
 %% Age of Information
 
 initialAge = 0;  % Initial age. (2 seconds)
 age = initialAge + dt*(0:length(t)-1);
 one = ones(numSources, 1);
 age = one*age;
-figure(2)
-for i=1:numSources
-    subplot(numSources,1,i);
-    plot(t, age(i,:));
-end
 
 % Round t and timeRecieve
 t = round(t./dt).*dt;
@@ -134,9 +100,6 @@ for i = 1:length(t)
         packetAge = S + W;
         diff = max(0, age(prevSource,i) - packetAge);
         age(prevSource,i:length(age)) = age(prevSource,i:length(age)) - diff;
-        figure(2)
-        subplot(numSources,1,prevSource);
-        plot(t,age(prevSource,:));
     end
     % A packet arrives at the queue at current time step
     if(ismember(t(i), timeTransmit(2,:)))
@@ -214,11 +177,19 @@ for i = 1:length(t)
 end
 
 avgAge = sum(age,2)./length(age);
-figure(2)
+figure
+set(gcf,'position', [369,376,935,494]);
 
 for i=1:numSources
     subplot(numSources,1,i)
+    plot(t, age(i,:));
+    xlabel('time (s)');
+    ylabel('age (s)');
+    title(['Source ', num2str(i), ', lambda = ', rats(lambda(i))]);
     hold on
     plot(t,avgAge(i).*ones(size(t)));
+    legend('Location', 'northwest')
     legend('Age', ['Avg. Age = ', num2str(avgAge(i), 4)]);
 end
+
+toc
