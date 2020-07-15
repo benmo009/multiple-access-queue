@@ -78,8 +78,6 @@ for i=1:numSources
     
     % Round the vectors
     timeRecieved{i} = round(timeRecieved{i}./dt) .* dt;
-  
-    
 end
 
 totalEvents = sum(numEvents);
