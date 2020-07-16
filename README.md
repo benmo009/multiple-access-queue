@@ -9,12 +9,13 @@ Two methods for dealing with multiple sources
    queue and is being served independently, but at half the rate.
 
 TODO (unordered):
-1. proportional slots
-2. source 1 can be served anytime
-3. compute average delay
-4. finite buffer queue
-5. slot duration as inverse of arrival rate
-6. Find best slot duration
-7. Look for differences in the methods
-8. See what happens when you scale up the number of sources
-9. Look at how avg age changes with simulation time
+- [] proportional slots
+- [] source 1 can be served anytime
+- [x] compute average delay
+- [] finite buffer queue
+- [] slot duration as inverse of arrival rate
+- [x] Find best slot duration
+- [] Look for differences in the methods
+- [] See what happens when you scale up the number of sources
+- [] Look at how avg age changes with simulation time
+- [] double buffer to limit arrival rates
