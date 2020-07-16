@@ -1,7 +1,11 @@
 % PlotAge.m
 % Function to plot the age for any number of sources.
 
-function PlotAge(t, age, lambda)
+function PlotAge(t, age, lambda, source)
+    if nargin == 3
+        source = 0;
+    end
+
     figure
     set(gcf, 'position', [369, 376, 935, 494]);
 
@@ -10,13 +14,16 @@ function PlotAge(t, age, lambda)
 
     % Calculate age for each source
     for i = 1:numSources
+        if numSources ~= 1
+            source = i;
+        end            
         subplot(numSources, 1, i)
         plot(t, age(i, :));
         hold on
         plot(t, avgAge(i) .* ones(size(t)));
         xlabel('time (s)');
         ylabel('age (s)');
-        title(['Source ', num2str(i), ', lambda = ', strtrim(rats(lambda(i)))]);
+        title(['Source ', num2str(source), ', lambda = ', strtrim(rats(lambda(i)))]);
         legend('Location', 'northwest')
         legend('Age', ['Avg. Age = ', num2str(avgAge(i), 4)]);
     end
