@@ -34,6 +34,6 @@ slotDuration = max(slotDuration);
 slotDuration = round(slotDuration/dt) * dt;  % round to same order as time step
 %mu*exp(-mu*t)
 
-[avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, true);
+[avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, true);
 
 toc

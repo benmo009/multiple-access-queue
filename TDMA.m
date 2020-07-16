@@ -11,7 +11,7 @@
 % Outputs the average age over the duration of the simulation and its
 % standard deviation
 
-function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, plotResult)
+function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, plotResult)
     % If plotResult argument not given, set to false
     if nargin == 6
         plotResult = false;
@@ -173,9 +173,8 @@ function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuratio
     t(cutoff:end) = [];
     age(:,cutoff:end) = [];
 
-    % Calculate averages and standard deviation to return
+    % Calculate averages to return
     avgAge = sum(age,2)/size(age,2);
-    stdDevAge = std(age, 0, 2);
     avgWait = sum(W(2,:)) / totalEvents;
 
     % Plot the result
