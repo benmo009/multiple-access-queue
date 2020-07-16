@@ -34,6 +34,18 @@ slotDuration = max(slotDuration);
 slotDuration = round(slotDuration/dt) * dt;  % round to same order as time step
 %mu*exp(-mu*t)
 
-[avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, true);
+
+currentDir = pwd;
+saveTo = [currentDir, '/../Data/TDMA_plots/'];
+
+for i = 1:10
+    [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, true);
+    for j = 1:numSources
+        filename = sprintf('(%d)_TDMA_source_%d-of-%d.png', i, j, numSources);
+        saveas(figure(j), [saveTo, filename]);
+    end
+    close all
+end
+
 
 toc
