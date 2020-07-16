@@ -12,18 +12,18 @@ tic
 %% Set Simulation Parameters
 % Define step size and simulation duration (seconds)
 dt = 0.1;
-tFinal = (1)*60;
+tFinal = 1800;
 
 % Define number of sources
 numSources = 2;
 
 % Set transmission rates for each source (packet/second)
 lambda = zeros(numSources,1);
-lambda(1) = 1/20;
-lambda(2) = 1/15;
+lambda(1) = 1/60;
+lambda(2) = 1/45;
 
-% Set average service time (seconds)
-mu = 1/20;
+% Set average service rate (packet/seconds)
+mu = 1/30;
 
 % Set slot width
 % Probability of packet arriving is P = 1 - e^(-lambda*t)
