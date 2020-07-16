@@ -1,3 +1,7 @@
+% SimulateAoI.m
+% Function to simulate a single source, first come first serve M/M/1 queue and
+% returns the average age of information and wait time in queue.
+
 function [avgAge, avgWait] = SimulateAoI(tFinal, dt, lambda, mu, plotResult, source)
     % If plotResult and source aren't given, set them to default values
     if nargin == 4
@@ -73,15 +77,7 @@ function [avgAge, avgWait] = SimulateAoI(tFinal, dt, lambda, mu, plotResult, sou
     avgWait = sum(W) / length(W);
 
     if plotResult
-        figure
-        plot(t./60, age);
-        hold on
-        plot(t./60, avgAge.*ones(size(t)));
-        xlabel('time (s)');
-        ylabel('age (s)');
-        title(['Source ', num2str(source), ', lambda = ', strtrim(rats(lambda))]);
-        legend('Location', 'northwest');
-        legend('Age', ['Avg Age = ', num2str(avgAge, 4)]);
+        PlotAge(t, age, lambda);
     end    
 
     
