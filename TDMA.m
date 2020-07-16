@@ -75,7 +75,7 @@ function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuratio
     packetsServed = 0;
 
     % Copy timeTransmit matrix to do work in
-    timeFinished = timeTransmit;
+    packetsToServe = timeTransmit;
 
     % Initialize age matrix
     age = dt * (0:length(t) - 1);
@@ -103,18 +103,18 @@ function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuratio
 
         % Find the first packet that works for this slot
         i = 1;
-        while (i <= size(timeFinished, 2)) && (timeFinished(1,i) ~= serveSource)
+        while (i <= size(packetsToServe, 2)) && (packetsToServe(1,i) ~= serveSource)
             i = i + 1;
         end
 
         % Check packetIndex
-        if i > size(timeFinished,2)
+        if i > size(packetsToServe,2)
             % There were no sources sent by the source we want
             currentTime = slotTransition;
             continue;
         end
 
-        packet = timeFinished(:,i);
+        packet = packetsToServe(:,i);
         % Check if this 
         if packet(2) >= slotTransition
             currentTime = slotTransition;
@@ -122,7 +122,10 @@ function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuratio
         end
 
         % Serve the packet
-        packetIndex = find(timeTransmit(2, :) == packet(2)); % Find the packet's index
+        % Find the packet's index
+        sameSource = find(timeTransmit(1,:) == packet(1));
+        sameTime = find(timeTransmit(2,:) == packet(2));
+        packetIndex = intersect(sameTime, sameSource);
         % Calculate the age of the packet when its done being served
         packetAge = S(packetIndex) + W(2,packetIndex);
         % Store the packet and the time it finished being served in prevPacket
@@ -145,18 +148,25 @@ function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuratio
         % Set first row of wait matrix
         W(1, packetIndex) = 0;
 
-        % Remove served packet from timeFinished matrix
-        timeFinished(:, i) = [];
+        % Remove served packet from packetsToServe matrix
+        packetsToServe(:, i) = [];
 
+        % Update the time and increment packet count
         currentTime = prevPacket(2);
         packetsServed = packetsServed + 1;
-
     end
+    
+    % Cut off age at final packet served time
+    cutoff = round((currentTime / dt)) + 2;
+    t(cutoff:end) = [];
+    age(:,cutoff:end) = [];
 
+    % Calculate averages and standard deviation to return
     avgAge = sum(age,2)/size(age,2);
     stdDevAge = std(age, 0, 2);
     avgWait = sum(W(2,:)) / totalEvents;
 
+    % Plot the result
     if plotResult
         PlotAge(t, age, lambda);
     end
