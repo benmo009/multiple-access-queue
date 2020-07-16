@@ -37,6 +37,7 @@ simAvgWait = zeros(1, numSimulations);
 simStdDevAge = zeros(numSources, numSimulations);
 simStdDevWait = zeros(1, numSimulations);
 
+tic
 
 for p = 1:length(probability)
     % Set slot width
@@ -60,21 +61,21 @@ end
 % Plot Avg Age
 for i = 1:numSources
     figure
-    %plot(probability, avgAge(i,:));
+    set(gcf, 'position', [369, 376, 935, 494])
     err = stdDevAge(i,:) ./ sqrt(numSimulations);
-    errorbar(probability, avgAge(i,:), err);
+    errorbar(probability, avgAge(i,:), err, '.', 'MarkerSize', 10);
 
     title(['Avg Age vs. Slot Duration Probability for Source ', num2str(i)]);
     xlabel('Probability');
     ylabel('Avg Age');
 end
 
+toc
+
 % Plot Avg Wait
 figure
-%plot(probability, avgWait);
-stdDevWait
-err = stdDevWait ./ sqrt(numSimulations)
-errorbar(probability, avgWait, err);
+set(gcf, 'position', [369, 376, 935, 494])
+errorbar(probability, avgWait, err, '.', 'MarkerSize', 10);
 
 title('Avg Wait vs. Slot Duration Probability');
 xlabel('Probability');
