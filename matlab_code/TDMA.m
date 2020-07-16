@@ -53,11 +53,6 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
         % Update count
         count = last;
         
-        % Plot the packets arrivals
-        if plotResult
-            stem(t, event(i,:));
-            hold on;
-        end
     end
 
     % Sort timeTransmit based on the times

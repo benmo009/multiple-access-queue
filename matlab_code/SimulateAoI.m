@@ -77,7 +77,7 @@ function [avgAge, avgWait] = SimulateAoI(tFinal, dt, lambda, mu, plotResult, sou
     avgWait = sum(W) / length(W);
 
     if plotResult
-        PlotAge(t, age, lambda);
+        PlotAge(t, age, lambda, source);
     end    
 
     
