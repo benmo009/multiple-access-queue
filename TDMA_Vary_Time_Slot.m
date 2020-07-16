@@ -59,6 +59,15 @@ for p = 1:length(probability)
 end
 
 % Plot Avg Age
+str = sprintf('%d sources\n', numSources);
+str = [str, '\lambda = [ '];
+for i = 1:numSources
+    str = [str, strtrim(rats(lambda(i))), ' '];
+end
+str = [str, ']'];
+str = [str, sprintf('\n')];
+str = [str, '\mu = ', strtrim(rats(mu))];
+
 for i = 1:numSources
     figure
     set(gcf, 'position', [369, 376, 935, 494])
@@ -67,7 +76,8 @@ for i = 1:numSources
 
     title(['Avg Age vs. Slot Duration Probability for Source ', num2str(i)]);
     xlabel('Probability');
-    ylabel('Avg Age');
+    ylabel('Avgerage Age (s)');
+    annotation('textbox', [0.15 0.75, 0.18, 0.12], 'String', str, 'FitBoxToText', 'on')
 end
 
 toc
@@ -77,7 +87,8 @@ figure
 set(gcf, 'position', [369, 376, 935, 494])
 errorbar(probability, avgWait, err, '.', 'MarkerSize', 10);
 
-title('Avg Wait vs. Slot Duration Probability');
+title('Avg Delay vs. Slot Duration Probability');
 xlabel('Probability');
-ylabel('Avg Wait Time');
+ylabel('Avgerage Delay (s)');
+annotation('textbox', [0.15 0.75, 0.18, 0.12], 'String', str, 'FitBoxToText', 'on')
 
