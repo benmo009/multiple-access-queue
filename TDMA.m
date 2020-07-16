@@ -12,6 +12,7 @@
 % standard deviation
 
 function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, plotResult)
+    % If plotResult argument not given, set to false
     if nargin == 6
         plotResult = false;
     end
@@ -40,15 +41,19 @@ function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuratio
         % Find where a packet was sent and save the time
         timestamps = find(event(i,:) == 1);
         timestamps = (timestamps - 1) .* dt;
+
         % Calculate the beginning and ending indecies for the timeTransmit matrix
         first = count + 1;
         last = count + length(timestamps);
+
         % Put the packet information into timeTransmit
         timeTransmit(1, first:last) = i;
         timeTransmit(2, first:last) = timestamps;
+
         % Update count
         count = last;
         
+        % Plot the packets arrivals
         if plotResult
             stem(t, event(i,:));
             hold on;
@@ -63,7 +68,6 @@ function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuratio
     totalEvents = sum(numEvents);
 
     % Initialize variables
-
     % Matrix to store wait times. Top row is 1 if the corresponding packet hasn't
     % been served yet, and zero if it has been served
     W = [ones(1, totalEvents); zeros(1, totalEvents)];
@@ -122,17 +126,23 @@ function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuratio
         end
 
         % Serve the packet
-        % Find the packet's index
+        % Find the packet's index. Need to search for a match in both source and
+        % time in case multiple sources sent a packet at the same time
         sameSource = find(timeTransmit(1,:) == packet(1));
         sameTime = find(timeTransmit(2,:) == packet(2));
         packetIndex = intersect(sameTime, sameSource);
+
         % Calculate the age of the packet when its done being served
         packetAge = S(packetIndex) + W(2,packetIndex);
+
         % Store the packet and the time it finished being served in prevPacket
         prevPacket = packet;
         prevPacket(2) = packet(2) + packetAge;
+
         % Update the age
+        % Calculate the index for the time and age vectors
         tIndex = round((prevPacket(2) / dt) + 1);
+
         % Check if current time is outside of the time and age vectors
         while tIndex > length(t)
             % Double the time vector and the age vector
@@ -142,10 +152,12 @@ function [avgAge, stdDevAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuratio
             ageAppend = ageEnd + [0:dt:tFinal/2 - dt];
             age = [age, ageAppend];
         end
+
+        % Decrease age such that at the current time, it is equal to packet age
         ageReduce = age(prevPacket(1), tIndex) - packetAge;
         age(prevPacket(1), tIndex:end) = age(prevPacket(1), tIndex:end) - ageReduce;
 
-        % Set first row of wait matrix
+        % Set first row of wait matrix to 0 for the newly served packet
         W(1, packetIndex) = 0;
 
         % Remove served packet from packetsToServe matrix
