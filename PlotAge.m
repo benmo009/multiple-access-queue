@@ -1,3 +1,6 @@
+% PlotAge.m
+% Function to plot the age for any number of sources.
+
 function PlotAge(t, age, lambda)
     figure
     set(gcf, 'position', [369, 376, 935, 494]);
