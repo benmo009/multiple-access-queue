@@ -23,7 +23,8 @@ lambda(1) = 1/60;
 lambda(2) = 1/45;
 
 % Set average service rate (packet/seconds)
-mu = 1/30;
+%mu = 1/10;
+mu = mean(lambda);
 
 % Set slot width
 % Probability of packet arriving is P = 1 - e^(-lambda*t)
