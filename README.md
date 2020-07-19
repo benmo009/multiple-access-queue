@@ -1,4 +1,5 @@
 multiple-access-queue
+
 Matlab code to simulate the behavior of multiple sources being served by a
 single server.
 
@@ -9,13 +10,14 @@ Two methods for dealing with multiple sources
    queue and is being served independently, but at half the rate.
 
 TODO (unordered):
-- [ ] proportional slots
-- [ ] source 1 can be served anytime
-- [x] compute average delay
-- [ ] finite buffer queue
-- [ ] slot duration as inverse of arrival rate
+- [x] Compute average delay
 - [x] Find best slot duration
-- [ ] Look for differences in the methods
-- [ ] See what happens when you scale up the number of sources
+- [x] Plot results from both methods to look for differences
+- [ ] TDMA where source 1 has priority
+- [ ] Limit queue size
+- [ ] Use Linear Regression to find optimal lambda/slot duration
+- [ ] Slot durations proportional to individual arrival rates
+- [ ] Double buffer to limit arrival rates
+- [ ] Slot duration as inverse of arrival rate
+- [ ] Scale up the number of sources
 - [ ] Look at how avg age changes with simulation time
-- [ ] double buffer to limit arrival rates
