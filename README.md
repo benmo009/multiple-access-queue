@@ -10,14 +10,19 @@ Two methods for dealing with multiple sources
    queue and is being served independently, but at half the rate.
 
 TODO (unordered):
-- [x] Compute average delay
-- [x] Find best slot duration
-- [x] Plot results from both methods to look for differences
-- [ ] TDMA where source 1 has priority
+- [ ] source 1 can be served anytime / priority -> possible for TDMA
 - [ ] Limit queue size
-- [ ] Use Linear Regression to find optimal lambda/slot duration
+- [ ] linear regression find optimal slot duration and optimal lambda ?
+
+        - age should be at its minimum [prediction curve, how does the average data change]
+
 - [ ] Slot durations proportional to individual arrival rates
+- [ ] limiting the source size -> possible for FDMA
+- [ ] 3 users/ scale up the number of sources
 - [ ] Double buffer to limit arrival rates
 - [ ] Slot duration as inverse of arrival rate
-- [ ] Scale up the number of sources
 - [ ] Look at how avg age changes with simulation time
+- [ ] metric: avergae wait time? elapsed time? avergae age? average wait?
+- [ ] metric: each packets waiting in the queue
+- [ ] metric: how long packet stay in the queue
+

@@ -30,7 +30,11 @@ slotDuration = invLambda * (-log(1 - probability));
 slotDuration = round(slotDuration ./ dt) .* dt;
 slotSource = 1;
 
+<<<<<<< HEAD
+numSimulations = 10;
+=======
 numSimulations = 200;
+>>>>>>> dev
 
 % Vectors to store the averages of each probability
 avgAge = zeros(numSources, length(probability));
