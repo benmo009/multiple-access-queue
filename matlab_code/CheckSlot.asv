@@ -14,26 +14,25 @@ function [serveSource, slotNumber] = CheckSlot(time, numSources, slotDuration)
     end
     
     serveSource = mod(slotNumber, numSources) + 1;
+    
+    % The function will return true if
+    % the packet's source is recieved during a slot that matches the source.
 end
 
-% this_packet_source = packet(1);
-% this_packet_timestamp = packet(2);
-% this_packet_priority = 1
-% 
-% priority_array = zeros(numSources,1);
-% priority_array(1) = 1;
-% priority_array(2) = 0;
-% 
-% slotNumber = fix(timestamp/slotDuration);
-% serverSource = mod(slotNumber, numSources)+1;
-% 
-% % if everything match
-% serve = (this_packet_source == serverSource);
-% % now take care the case of priority
-% if ~serve:
-%     % if the higher priority packet land in slot belong to 
-%     % low priority packet
-%     if priority_array(this_packet_priority) > priority_array(serverSource):
-%         serve = True;
-%     end
-% end
+this_packet_source = packet(1);
+this_packet_timestamp = packet(2);
+this_packet_source_priority = packet(3);
+
+slotNumber = fix(timestamp/slotDuration);
+serverSource = mod(slotNumber, numSources)+1;
+
+% if everything match
+serve = (this_packet_source == serverSource);
+% now take care the case of priority
+if ~serve:
+    % if the higher priority packet land in slot belong to 
+    % low priority packet
+    
+
+
+if source
