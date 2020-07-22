@@ -2,8 +2,11 @@
 % is was sent based on the slot duration. The function will return true if
 % the packet's source is recieved during a slot that matches the source.
 
-function [serveSource, slotNumber] = CheckSlot(time, numSources, slotDuration)
+function [serveSource, slotNumber] = CheckSlot(time, numSources, slotDuration, priority, timeTransmit)
 
+    idx = timeTransmit(2,:)==time;
+    currentSource = timeTransmit(1, idx);
+    
     slotNumber = fix(time/slotDuration);
 
     % Added to remove floating point error bug where fix would return an
@@ -13,7 +16,14 @@ function [serveSource, slotNumber] = CheckSlot(time, numSources, slotDuration)
         slotNumber = slotNumber + 1;
     end
     
-    serveSource = mod(slotNumber, numSources) + 1;
+    serveSource = mod(slotNumber, numSources) + 1;  % is either a 1 or 2
+    
+    if serveSource ~= currentSource
+        if priority(currentSource) > priority(serveSource)
+            fprintf("At time: %d, priority take over serveSource slot!\n", time)
+            serveSource = currentSource;
+        end
+    end
 end
 
 % this_packet_source = packet(1);

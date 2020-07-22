@@ -11,7 +11,7 @@
 % Outputs the average age over the duration of the simulation and its
 % standard deviation
 
-function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, plotResult)
+function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, priority, plotResult)
     % If plotResult argument not given, set to false
     if nargin == 6
         plotResult = false;
@@ -88,7 +88,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
     currentTime = timeTransmit(2,1);
     while(packetsServed ~= totalEvents) 
         % Check which source current slot is for
-        [serveSource, slotNumber] = CheckSlot(currentTime, numSources, slotDuration);
+        [serveSource, slotNumber] = CheckSlot(currentTime, numSources, slotDuration, priority, timeTransmit);
         % Calculate when the next slot transition occurs
         slotTransition = (slotNumber + 1) * slotDuration;
 

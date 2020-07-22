@@ -18,6 +18,11 @@ lambda = zeros(numSources, 1);
 lambda(1) = 1/60;
 lambda(2) = 1/45;
 
+% Set priority on each source
+priority = zeros(numSources, 1);
+priority(1) = 1;
+priority(2) = 2;
+
 % Set average service rate (packet/seconds)
 mu = 1/30;
 
@@ -30,11 +35,7 @@ slotDuration = invLambda * (-log(1 - probability));
 slotDuration = round(slotDuration ./ dt) .* dt;
 slotSource = 1;
 
-<<<<<<< HEAD
-numSimulations = 10;
-=======
-numSimulations = 200;
->>>>>>> dev
+numSimulations = 1;
 
 % Vectors to store the averages of each probability
 avgAge = zeros(numSources, length(probability));
@@ -53,7 +54,7 @@ tic
 for p = 1:length(probability)
 
     for i = 1:numSimulations
-        [simAvgAge(:,i), simAvgWait(i)] = TDMA(tFinal, dt, numSources, slotDuration(slotSource, p), lambda, mu);
+        [simAvgAge(:,i), simAvgWait(i)] = TDMA(tFinal, dt, numSources, slotDuration(slotSource, p), lambda, mu, priority, false);
     end
 
     avgAge(:,p) = sum(simAvgAge,2) ./ numSimulations;
@@ -72,7 +73,7 @@ for i = 1:numSources
     str = [str, strtrim(rats(lambda(i))), ' '];
 end
 str = [str, ']'];
-str = [str, sprintf('\n')];
+str = [str, newline];
 str = [str, '\mu = ', strtrim(rats(mu))];
 
 % Set Directory to save the plots to

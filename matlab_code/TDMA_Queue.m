@@ -22,9 +22,14 @@ lambda = zeros(numSources,1);
 lambda(1) = 1/60;
 lambda(2) = 1/45;
 
+% Set priority on each source
+priority = zeros(numSources, 1);
+priority(1) = 1;
+priority(2) = 2;
+
 % Set average service rate (packet/seconds)
-%mu = 1/10;
-mu = mean(lambda);
+mu = 1/30;
+%mu = mean(lambda);
 
 % Set slot width
 % Probability of packet arriving is P = 1 - e^(-lambda*t)
@@ -39,8 +44,8 @@ slotDuration = round(slotDuration/dt) * dt;  % round to same order as time step
 currentDir = pwd;
 saveTo = [currentDir, '/../Data/TDMA_plots/'];
 
-for i = 1:10
-    [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, true);
+for i = 1:1
+    [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, priority, true);
     for j = 1:numSources
         filename = sprintf('(%d)_TDMA_source_%d-of-%d.png', i, j, numSources);
         saveas(figure(j), [saveTo, filename]);
