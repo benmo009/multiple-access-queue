@@ -1,7 +1,9 @@
 % AoILimitQueue.m
 % Function to simulate single source, M/M/1 Queue with a limited queue size
 
-function avgAge = AoILimitQueue(tFinal, dt, lambda, mu, queueSizeplotResult, source)
+function [avgAge, avgWait] = AoILimitQueue(tFinal, dt, lambda, mu, queueSize, plotResult, source)
+    import java.util.LinkedList
+
     % If plotResult and source aren't given, set them to default values
     if nargin <= 5
         plotResult = false;
@@ -16,6 +18,7 @@ function avgAge = AoILimitQueue(tFinal, dt, lambda, mu, queueSizeplotResult, sou
 
     % Generate vector of transmission times
     event = GenerateTransmissions(lambda, t);
+    numEvents = sum(event);
 
     % Find timestamps of each event and store them
     timeTransmit = find(event == 1);
@@ -25,65 +28,124 @@ function avgAge = AoILimitQueue(tFinal, dt, lambda, mu, queueSizeplotResult, sou
     S = exprnd(1/mu, size(timeTransmit));
     S = round(S ./ dt) .* dt;
 
-    % Initialize wait and timeRecieved vectors
+    % Initialize wait and timeReceived vectors
     W = zeros(size(S));
-    timeRecieved = zeros(size(S));
-    timeRecieved(1) = timeTransmit(1) + W(1) + S(1);
+    timeReceived = zeros(size(S));
+    timeReceived(1) = timeTransmit(1) + W(1) + S(1);
+    packet = timeTransmit(1);
 
-    % Initialize empty queue
-    queue = [];
-    packetsInQueue = 0;
-
-    numEvents = sum(event);
-
+    % Vector of upcomming packets
     toServe = timeTransmit(2:end);
 
-    lastPacketServed = timeRecieved(1);
+    % Initialize empty queue
+    queue = LinkedList();
+
+    % Variable to keep track of time
+    lastPacketServed = timeReceived(1);
+    currentTime = min(toServe(1), lastPacketServed);
     packetsServed = 1;
-    currentTime = timeTransmit(i);           
     
-    for i = 2:numEvents
-        currentTime = timeTransmit(i);
-        % Packet i arrives after packet i-1 has been served
-        if timeTransmit(i) >= lastPacketServed
-            queue = [queue, timeTransmit(i)];
+    age = t;
 
-            toServe = queue(1);
-            queue(1) = [];
+    while (true)
+        if currentTime > lastPacketServed 
+            packetsServed = packetsServed + 1;
+            timeReceived(packetsServed) = currentTime + S(packetsServed) + W(packetsServed);
+            lastPacketServed = timeReceived(packetsServed);
 
-            % Keep going through the queue until it is empty, or timeTransmit(i) is reached
-            while ~isempty(queue) && lastPacketServed <= timeTransmit(i)
-                W(packetsServed+1) = lastPacketServed - toServe;
-                timeRecieved(packetsServed+1) = toServe + W(packetsServed+1) + S(packetsServed+1);
-                lastPacketServed = timeRecieved(packetsServed+1);
-                packetsServed = packetsServed+1;
+            if isempty(toServe)
+                currentTime = lastPacketServed;
+            else
+                currentTime = min(toServe(1), lastPacketServed);
+            end
+            
 
-                toServe = queue(1);
-                queue(1) = [];
-                packetsInQueue = size(queue, 2);
+        elseif currentTime == lastPacketServed
+            % Packet just finished being served. Take next packet from the queue
+            % If the queue is empty, skip to when the next packet arrives
+            
+            % Update the age
+            packetAge = currentTime - packet;
+            ageIndex = uint32(currentTime/dt + 1);
 
+            if ageIndex > length(age)
+                % Double the age and time vectors
+                tFinal = 2 * tFinal;
+                t = [0:dt:tFinal];
+                ageEnd = age(:, end) + dt;
+                ageAppend = ageEnd + [0:dt:tFinal / 2 - dt];
+                age = [age, ageAppend];
+            end
+
+            reduceAge = age(ageIndex) - packetAge;
+            age(ageIndex:end) = age(ageIndex:end) - reduceAge;
+
+            if queue.size() == 0
+                % queue is empty
+                if isempty(toServe)
+                    break;
+                end
+                currentTime = toServe(1);
+                packet = currentTime;
+                toServe(1) = [];
+
+            else
+                packet = queue.remove();
+                packetsServed = packetsServed + 1;
+                W(packetsServed) = currentTime - packet;
+                timeReceived(packetsServed) = currentTime + S(packetsServed);
+
+                lastPacketServed = timeReceived(packetsServed);
+
+                if isempty(toServe)
+                    currentTime = lastPacketServed;
+                else
+                    currentTime = min(toServe(1), lastPacketServed);
+                end
+                
             end
 
 
-            % Serve the first packet in queue
+        elseif currentTime < lastPacketServed
+            % Newest packet arrived when the server is still working on a packet
+            % Add newly arrived packet to queue
 
-            % Set lastPacketServed to newest packet
+            queue.add(currentTime);
+            if queue.size() > queueSize
+                queue.remove();
+                disp('discarded a packet');
+            end
 
-
-        % Packet i arrived before packet i-1 is done being served
-        elseif timeTransmit(i) < lastPacketServed
-            % Serving packet i-1, put packet i in the queue
-            queue = [queue, timeTransmit(i)];
-            packetsInQueue = size(queue, 2);
-            if packetsInQueue > queueSize
-                queue(1) = [];
-                packetsInQueue = size(queue, 2);
+            toServe(1) = [];
+            if isempty(toServe)
+                currentTime = lastPacketServed;
+            else
+                currentTime = min(toServe(1), lastPacketServed);
             end
             
         end
 
-        % Time packet is done being served
-        %timeRecieved(i) = timeTransmit(i) + W(i) + S(i);
+        % Break the loop if there are no more packets to serve
+        if isempty(toServe) && (queue.size() == 0) && (currentTime == lastPacketServed)
+            break;
+        end
     end
+    
+    % Trim any trailing 0's
+    timeReceived = timeReceived(1:packetsServed);
+    W = W(1:packetsServed);
 
+    % Trim off extra age and t
+    ageIndex = uint32(lastPacketServed / dt + 1) + 1;
+    age(ageIndex:end) = [];
+    t(ageIndex:end) = [];
 
+    % Calculate Average Age and delay
+    avgAge = sum(age)/ length(age);
+    avgWait = sum(W) / length(W);
+
+    if plotResult
+        PlotAge(t, age, lambda, source);
+    end
+    
+end
