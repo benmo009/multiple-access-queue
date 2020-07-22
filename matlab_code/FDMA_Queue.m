@@ -34,11 +34,10 @@ currentDir = pwd;
 saveTo = [currentDir, '/../Data/FDMA_plots/queueSize_Inf/'];
 
 for i = 1:10
-    [avgAge, avgWait] = FDMA(tFinal, dt, numSources, lambda, mu, queueSize, true);
+    [avgAge, avgWait, served] = FDMA(tFinal, dt, numSources, lambda, mu, queueSize, true);
     for j = 1:numSources
         filename = sprintf('(%d)_FDMA_source_%d-of-%d.png', i, j, numSources);
         saveas(figure(j), [saveTo, filename]);
     end
     close all
 end
-

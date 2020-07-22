@@ -1,7 +1,7 @@
 % AoILimitQueue.m
 % Function to simulate single source, M/M/1 Queue with a limited queue size
 
-function [avgAge, avgWait] = AoILimitQueue(tFinal, dt, lambda, mu, queueSize, plotResult, source)
+function [avgAge, avgWait, served] = AoILimitQueue(tFinal, dt, lambda, mu, queueSize, plotResult, source)
     import java.util.LinkedList
 
     % If plotResult and source aren't given, set them to default values
@@ -142,6 +142,7 @@ function [avgAge, avgWait] = AoILimitQueue(tFinal, dt, lambda, mu, queueSize, pl
     % Calculate Average Age and delay
     avgAge = sum(age)/ length(age);
     avgWait = sum(W) / length(W);
+    served = packetsServed/numEvents;
 
     if plotResult
         PlotAge(t, age, lambda, source);
