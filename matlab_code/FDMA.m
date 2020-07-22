@@ -6,10 +6,13 @@
 % average age over the duration of the simulation and the average wait time in
 % the queue
 
-function [avgAge, avgWait] = FDMA(tFinal, dt, numSources, lambda, mu, plotResult)
+function [avgAge, avgWait] = FDMA(tFinal, dt, numSources, lambda, mu, queueSize, plotResult)
     % Set plotResult to false if it wasn't given
-    if nargin == 5
+    if nargin <= 5
         plotResult = false;
+    end
+    if nargin <= 4
+        queueSize = Inf;
     end
 
     % Initialize vectors for storing average age and wait times
@@ -17,7 +20,13 @@ function [avgAge, avgWait] = FDMA(tFinal, dt, numSources, lambda, mu, plotResult
     avgWait = zeros(numSources, 1);
 
     % Simulate the queue for each source
-    for i = 1:numSources
-        [avgAge(i), avgWait(i)] = SimulateAoI(tFinal, dt, lambda(i), mu(i), plotResult, i);
+    if queueSize == Inf
+        for i = 1:numSources
+            [avgAge(i), avgWait(i)] = SimulateAoI(tFinal, dt, lambda(i), mu(i), plotResult, i);
+        end
+    else
+        for i = 1:numSources
+            [avgAge(i), avgWait(i)] = AoILimitQueue(tFinal, dt, lambda(i), mu(i), queueSize, plotResult, i);
+        end
     end
 end

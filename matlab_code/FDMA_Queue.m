@@ -28,11 +28,13 @@ mu = zeros(numSources,1);
 mu(1) = 1/60;
 mu(2) = 1/60;
 
+queueSize = Inf;
+
 currentDir = pwd;
-saveTo = [currentDir, '/../Data/FDMA_plots/'];
+saveTo = [currentDir, '/../Data/FDMA_plots/queueSize_Inf/'];
 
 for i = 1:10
-    [avgAge, avgWait] = FDMA(tFinal, dt, numSources, lambda, mu, true);
+    [avgAge, avgWait] = FDMA(tFinal, dt, numSources, lambda, mu, queueSize, true);
     for j = 1:numSources
         filename = sprintf('(%d)_FDMA_source_%d-of-%d.png', i, j, numSources);
         saveas(figure(j), [saveTo, filename]);

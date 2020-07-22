@@ -113,7 +113,6 @@ function [avgAge, avgWait] = AoILimitQueue(tFinal, dt, lambda, mu, queueSize, pl
             queue.add(currentTime);
             if queue.size() > queueSize
                 queue.remove();
-                disp('discarded a packet');
             end
 
             toServe(1) = [];
