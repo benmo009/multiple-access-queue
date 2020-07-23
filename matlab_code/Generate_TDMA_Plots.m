@@ -40,12 +40,20 @@ slotDuration = max(slotDuration);
 slotDuration = round(slotDuration/dt) * dt;  % round to same order as time step
 %mu*exp(-mu*t)
 
+priority = [0, 0];
+queueSize = Inf;
 
 currentDir = pwd;
 saveTo = [currentDir, '/../Data/TDMA_plots/'];
+folder = sprintf('queueSize_%d/P=%.1f/', queueSize, probability);
+saveTo = [saveTo, folder];
+% Create new folder if necessary
+if ~exist(saveTo, 'dir')
+    mkdir(saveTo);
+end
 
-for i = 1:1
-    [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, priority, true);
+for i = 1:10
+    [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, priority, queueSize, true);
     for j = 1:numSources
         filename = sprintf('(%d)_TDMA_source_%d-of-%d.png', i, j, numSources);
         saveas(figure(j), [saveTo, filename]);
