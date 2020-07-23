@@ -67,9 +67,6 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
     [~,idx] = sort(timeTransmit(2,:));
     timeTransmit = timeTransmit(:,idx);
 
-    % Record total number of events
-    totalEvents = sum(numEvents);
-
     % Initialize variables
     % Count how many packets have been served
     packetsServed = zeros(numSources, 1);
@@ -104,8 +101,10 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
     else
         isPacket = false;
     end
-
-    lastPacketServed = 0; % Timestamp of when the most recent packet was served
+    
+    % Timestamp of when the most recent packet was served. Initialized to
+    % -1 to ensure loop starts with currentTime > lastPacketServed
+    lastPacketServed = -1; 
 
     % Initialize first slot transition to 0
     slotTransition = 0;
@@ -131,7 +130,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
             if isPacket
                 % Check if the time slot is correct
                 source = packet(1);
-                if serveSource ~= source;
+                if serveSource ~= source
                     % Wrong slot, add to queue
                     queue{source}.add(packet(2));
                     if queue{source}.size() > queueSize
