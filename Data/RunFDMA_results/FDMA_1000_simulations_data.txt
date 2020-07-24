@@ -1,0 +1,21 @@
+Elapsed time is 3.126372 seconds.
+
+Ran 1000 simulations for FDMA with 2 sources.
+Simulation time was 1800 seconds with step size 0.1
+Maximum Queue Size: Inf
+
+lambda:
+	Source 1: 1/60
+	Source 2: 1/45
+mu:
+	Source 1: 1/60
+	Source 2: 1/60
+
+DATA
+Average Age:
+	Source 1: 281.31, std dev = 145.10
+	Source 2: 467.25, std dev = 238.07
+Average Delay:
+	Source 1: 202.28, std dev = 160.20
+	Source 2: 406.35, std dev = 253.76
+	 
