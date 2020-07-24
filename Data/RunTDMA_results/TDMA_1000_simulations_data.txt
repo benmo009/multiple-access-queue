@@ -1,0 +1,20 @@
+Elapsed time is 30.370012 seconds.
+
+Ran 1000 simulations for TDMA with 2 sources.
+Simulation time was 1800 seconds with step size 0.1
+Time slot P = 0.3 (21.4 s)
+Maximum Queue Size: Inf
+
+lambda:
+	Source 1: 1/60
+	Source 2: 1/45
+mu: 1/30
+
+DATA
+Average Age:
+	Source 1: 281.30, std dev = 132.37
+	Source 2: 341.39, std dev = 164.37
+Average Delay:
+	Source 1: 208.89, std dev = 150.51
+	Source 2: 309.02, std dev = 189.43
+     
