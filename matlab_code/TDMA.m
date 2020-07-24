@@ -118,11 +118,11 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
             slotTransition = (slotNumber + 1) * slotDuration; 
         end
 
-
+        % Check were the current time is in relation to lastPacketServed
         if currentTime > lastPacketServed
             % A new packet arrived or slot transitioned after the previous
             % packet has been served. Only gets here if the server has been idle
-            % If its a packet, either serve it or put it in the queue depending
+            % If it's a packet, either serve it or put it in the queue depending
             % on the slot type. If its a slot transition, pull a packet from the
             % queue if there is one
 
@@ -133,10 +133,25 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
                 if serveSource ~= source
                     % Wrong slot, add to queue
                     queue{source}.add(packet(2));
+                    % Make sure queue limit isn't exceeded
                     if queue{source}.size() > queueSize
                         queue{source}.remove();
                     end
                 else
+                    % slot matches the source, calculate when this packet will
+                    % be done being served.
+
+                    % Put it into the queue, then remove it. In some cases, a
+                    % packet comes in at the same time the slot transitions, so
+                    % theres an earlier packet in the queue. If this isn't done,
+                    % the earlier packet might be served later, resulting in a
+                    % negative change in age
+                    queue{source}.add(packet(2));
+                    if queue{source}.size() > queueSize
+                        queue{source}.remove();
+                    end
+                    packet = [source; queue{source}.remove()];
+                    
                     packetsServed(source) = packetsServed(source) + 1;
                     idx = packetsServed(source);
                     lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
@@ -146,12 +161,14 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
             else
                 % Check queue if there is a packet that can be served
                 if queue{serveSource}.size() ~= 0
+                    % Take the packet from the queue
                     packet = [serveSource; queue{serveSource}.remove()];
                     source = packet(1);
 
                     % Serve the packet
                     packetsServed(source) = packetsServed(source) + 1;
                     idx = packetsServed(source);
+                    % Calculate the time this packet waited in the queue
                     W{source}(idx) = currentTime - packet(2);
                     lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
                     lastPacket = packet;
@@ -159,7 +176,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
             end
 
         elseif currentTime == lastPacketServed
-            % Server just finished, updat the age and then take another packet
+            % Server just finished, update the age and then take another packet
             % from the queue that matches the slot, if there is one.
 
             % Update age
