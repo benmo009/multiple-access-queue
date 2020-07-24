@@ -239,14 +239,14 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
             if currentTime >= lastPacketServed
                 currentTime = slotTransition;
             else
-                currentTime = min(lastPacketServed, slotTransition);
+                currentTime = lastPacketServed;
             end
             isPacket = false;
         else
             if currentTime >= lastPacketServed
                 currentTime = min(slotTransition, toServe(2,1));
             else
-                currentTime = min([lastPacketServed, slotTransition, toServe(2, 1)]); 
+                currentTime = min([lastPacketServed, toServe(2, 1)]); 
             end
 
             % Check if the next time is a packet arrival
