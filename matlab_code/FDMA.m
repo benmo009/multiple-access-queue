@@ -8,10 +8,10 @@
 
 function [avgAge, avgWait, served] = FDMA(tFinal, dt, numSources, lambda, mu, queueSize, plotResult)
     % Set plotResult to false if it wasn't given
-    if nargin <= 5
+    if nargin <= 6
         plotResult = false;
     end
-    if nargin <= 4
+    if nargin <= 5
         queueSize = Inf;
     end
 
