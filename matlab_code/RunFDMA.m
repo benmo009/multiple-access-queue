@@ -18,9 +18,11 @@ lambda(1) = 1/60;
 lambda(2) = 1/45;
 
 % Set average service rate (packet/seconds)
-mu = zeros(numSources, 1);
-mu(1) = 1/60;
-mu(2) = 1/60;
+mu = 1/30;
+b = 0.3;
+muVec = zeros(numSources, 1);
+muVec(1) = b * mu;
+muVec(2) = (1 - b) * mu;
 
 % Infinite queue
 queueSize = Inf;
@@ -32,7 +34,7 @@ avgWait = zeros(numSources, numSimulations);
 tic
 
 for i = 1:numSimulations
-    [avgAge(:, i), avgWait(:, i), served] = FDMA(tFinal, dt, numSources, lambda, mu, queueSize);
+    [avgAge(:, i), avgWait(:, i), served] = FDMA(tFinal, dt, numSources, lambda, muVec, queueSize);
 end
 
 toc
@@ -49,12 +51,12 @@ fprintf('Maximum Queue Size: %d\n', queueSize);
 
 fprintf('\nlambda:\n');
 for i = 1:numSources
-    fprintf('\tSource %d: %s\n', i, strtrim(rats(lambda(i))));
+    fprintf('\tSource %d: %.4f (%s)\n', i, lambda(i), strtrim(rats(lambda(i))));
 end
 
 fprintf('mu:\n');
 for i = 1:numSources
-    fprintf('\tSource %d: %s\n', i, strtrim(rats(mu(i))));
+    fprintf('\tSource %d: %.4f (%s)\n', i, muVec(i), strtrim(rats(muVec(i))));
 end
 
 fprintf('\nDATA\n');
