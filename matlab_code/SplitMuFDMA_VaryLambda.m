@@ -19,7 +19,7 @@ lambdaVec = linspace(0.015, 0.04, 10);
 
 % Set average service rate (packet/seconds)
 mu = 1/30;
-b = [0.05:0.025:0.95]; %linspace(0.05, 0.05, 30);
+b = [0.05:0.05:0.95]; %linspace(0.05, 0.05, 30);
 
 numSimulations = 50;
 
