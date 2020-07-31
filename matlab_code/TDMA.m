@@ -11,10 +11,18 @@
 % Outputs the average age over the duration of the simulation and its
 % standard deviation
 
-function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, priority, plotResult)
+function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, priority, queueSize, plotResult)
+    import java.util.LinkedList
+
     % If plotResult argument not given, set to false
-    if nargin == 6
+    if nargin <= 8
         plotResult = false;
+    end
+    if nargin <= 7
+        queueSize = Inf;
+    end
+    if nargin <= 6
+        priority = [0, 0];
     end
 
     % Create time vector
@@ -59,118 +67,228 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
     [~,idx] = sort(timeTransmit(2,:));
     timeTransmit = timeTransmit(:,idx);
 
-    % Record total number of events
-    totalEvents = sum(numEvents);
-
     % Initialize variables
-    % Matrix to store wait times. Top row is 1 if the corresponding packet hasn't
-    % been served yet, and zero if it has been served
-    W = [ones(1, totalEvents); zeros(1, totalEvents)];
-    % Vector to store service times, randomly generated from exponential
-    % distribution, then rounded to the order of the time step
-    S = exprnd(1/mu, 1, totalEvents);
-    S = round(S./dt) .* dt;
     % Count how many packets have been served
-    packetsServed = 0;
+    packetsServed = zeros(numSources, 1);
 
     % Copy timeTransmit matrix to do work in
-    packetsToServe = timeTransmit;
+    toServe = timeTransmit;
 
     % Initialize age matrix
-    age = dt * (0:length(t) - 1);
-    one = ones(numSources, 1);
-    age = one * age;
+    age = ones(numSources, 1) * t;
 
+    % Initialize queue and wait vectors. Store them in cell arrays
+    queue = cell(numSources,1);
+    W = cell(numSources, 1);
+    % Vector to store service times, randomly generated from exponential
+    % distribution, then rounded to the order of the time step
+    S = cell(numSources, 1);
+    for i = 1:numSources
+        queue{i} = LinkedList();
+        W{i} = zeros(1, numEvents(i));
+        S{i} = exprnd(1 / mu, 1, numEvents(i));
+        S{i} = round(S{i} ./ dt) .* dt;
+    end
 
     %% Calculate Age
     % Step through important events, such as when the slot changes, when a packet
     % arrives, or when a packet finishes being served.
-    currentTime = timeTransmit(2,1);
-    while(packetsServed ~= totalEvents) 
-        % Check which source current slot is for
-        [serveSource, slotNumber] = CheckSlot(currentTime, numSources, slotDuration, priority, timeTransmit);
-        % Calculate when the next slot transition occurs
-        slotTransition = (slotNumber + 1) * slotDuration;
-
-        % Update the wait matrix
-        % Calculate difference between current time and when each packet arrives at
-        % the queue. If the packet hasn't arrived yet, keep it at 0. 
-        % Multiply the timeDifference by the top row so if a packet was already
-        % served, it's wait time won't change.
-        timeDifference = max(0, currentTime*ones(size(W(2,:))) - timeTransmit(2,:) - W(2,:));
-        W(2, :) = W(2, :) + (W(1, :) .* timeDifference);
-
-        % Find the first packet that works for this slot
-        i = 1;
-        while (i <= size(packetsToServe, 2)) && (packetsToServe(1,i) ~= serveSource)
-            i = i + 1;
-        end
-
-        % Check packetIndex
-        if i > size(packetsToServe,2)
-            % There were no sources sent by the source we want
-            currentTime = slotTransition;
-            continue;
-        end
-
-        packet = packetsToServe(:,i);
-        % Check if this 
-        if packet(2) >= slotTransition
-            currentTime = slotTransition;
-            continue;
-        end
-
-        % Serve the packet
-        % Find the packet's index. Need to search for a match in both source and
-        % time in case multiple sources sent a packet at the same time
-        sameSource = find(timeTransmit(1,:) == packet(1));
-        sameTime = find(timeTransmit(2,:) == packet(2));
-        packetIndex = intersect(sameTime, sameSource);
-
-        % Calculate the age of the packet when its done being served
-        packetAge = S(packetIndex) + W(2,packetIndex);
-
-        % Store the packet and the time it finished being served in prevPacket
-        prevPacket = packet;
-        prevPacket(2) = packet(2) + packetAge;
-
-        % Update the age
-        % Calculate the index for the time and age vectors
-        tIndex = round((prevPacket(2) / dt) + 1);
-
-        % Check if current time is outside of the time and age vectors
-        while tIndex > length(t)
-            % Double the time vector and the age vector
-            tFinal = 2 * tFinal;
-            t = [0:dt:tFinal];
-            ageEnd = age(:,end) + dt;
-            ageAppend = ageEnd + [0:dt:tFinal/2 - dt];
-            age = [age, ageAppend];
-        end
-
-        % Decrease age such that at the current time, it is equal to packet age
-        ageReduce = age(prevPacket(1), tIndex) - packetAge;
-        age(prevPacket(1), tIndex:end) = age(prevPacket(1), tIndex:end) - ageReduce;
-
-        % Set first row of wait matrix to 0 for the newly served packet
-        W(1, packetIndex) = 0;
-
-        % Remove served packet from packetsToServe matrix
-        packetsToServe(:, i) = [];
-
-        % Update the time and increment packet count
-        currentTime = prevPacket(2);
-        packetsServed = packetsServed + 1;
+    currentTime = min(slotDuration, toServe(2,1));
+    if currentTime == toServe(2,1)
+        packet = toServe(:, 1);
+        toServe(:, 1) = [];
+        isPacket = true;
+    else
+        isPacket = false;
     end
     
+    % Timestamp of when the most recent packet was served. Initialized to
+    % -1 to ensure loop starts with currentTime > lastPacketServed
+    lastPacketServed = -1; 
+
+    % Initialize first slot transition to 0
+    slotTransition = 0;
+
+    while true
+        % Only need to calculate slot properties when entering a new slot
+        if currentTime >= slotTransition
+            % Check which source current slot is for
+            [serveSource, slotNumber] = CheckSlot(currentTime, numSources, slotDuration, priority, timeTransmit);
+            % Calculate when the next slot transition occurs
+            slotTransition = (slotNumber + 1) * slotDuration; 
+        end
+
+        % Check were the current time is in relation to lastPacketServed
+        if currentTime > lastPacketServed
+            % A new packet arrived or slot transitioned after the previous
+            % packet has been served. Only gets here if the server has been idle
+            % If it's a packet, either serve it or put it in the queue depending
+            % on the slot type. If its a slot transition, pull a packet from the
+            % queue if there is one
+
+            % Current Time is a packet arrival
+            if isPacket
+                % Check if the time slot is correct
+                source = packet(1);
+                if serveSource ~= source
+                    % Wrong slot, add to queue
+                    queue{source}.add(packet(2));
+                    % Make sure queue limit isn't exceeded
+                    if queue{source}.size() > queueSize
+                        queue{source}.remove();
+                    end
+                else
+                    % slot matches the source, calculate when this packet will
+                    % be done being served.
+
+                    % Put it into the queue, then remove it. In some cases, a
+                    % packet comes in at the same time the slot transitions, so
+                    % theres an earlier packet in the queue. If this isn't done,
+                    % the earlier packet might be served later, resulting in a
+                    % negative change in age
+                    queue{source}.add(packet(2));
+                    if queue{source}.size() > queueSize
+                        queue{source}.remove();
+                    end
+                    packet = [source; queue{source}.remove()];
+                    
+                    packetsServed(source) = packetsServed(source) + 1;
+                    idx = packetsServed(source);
+                    lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
+                    lastPacket = packet;
+                end
+            % Current Time is a slot transition
+            else
+                % Check queue if there is a packet that can be served
+                if queue{serveSource}.size() ~= 0
+                    % Take the packet from the queue
+                    packet = [serveSource; queue{serveSource}.remove()];
+                    source = packet(1);
+
+                    % Serve the packet
+                    packetsServed(source) = packetsServed(source) + 1;
+                    idx = packetsServed(source);
+                    % Calculate the time this packet waited in the queue
+                    W{source}(idx) = currentTime - packet(2);
+                    lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
+                    lastPacket = packet;
+                end
+            end
+
+        elseif currentTime == lastPacketServed
+            % Server just finished, update the age and then take another packet
+            % from the queue that matches the slot, if there is one.
+
+            % Update age
+            packetAge = currentTime - lastPacket(2);
+            ageIndex = uint32(currentTime / dt + 1);
+            % Double the length of age and t vectors if needed
+            if ageIndex > length(age)
+                % Double the age and time vectors
+                tFinal = 2 * tFinal;
+                t = [0:dt:tFinal];
+                ageEnd = age(:, end) + dt;
+                ageAppend = ageEnd + [0:dt:tFinal / 2 - dt];
+                age = [age, ageAppend];
+            end
+            reduceAge = age(lastPacket(1), ageIndex) - packetAge;
+            age(lastPacket(1), ageIndex:end) = age(lastPacket(1), ageIndex:end) - reduceAge;
+
+            % Add the packet to queue in the case a packet arrived at the same
+            % time the server finished
+            if isPacket
+                queue{packet(1)}.add(packet(2));
+                if queue{packet(1)}.size() > queueSize
+                    queue{packet(1)}.remove();
+                end
+            end
+
+            if queue{serveSource}.size() ~= 0
+                % Remove a packet from the queue
+                packet = [serveSource; queue{serveSource}.remove()];
+                source = packet(1);
+                
+                % Serve the packet
+                packetsServed(source) = packetsServed(source) + 1;
+                idx = packetsServed(source);
+                W{source}(idx) = currentTime - packet(2);
+                lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
+                lastPacket = packet;
+            end
+
+
+        elseif currentTime < lastPacketServed
+            % A packet arrives or slot transitions while the server is busy
+            % If it was a packet, add it to the queue
+            if isPacket
+                queue{packet(1)}.add(packet(2));
+                if queue{packet(1)}.size() > queueSize
+                    queue{packet(1)}.remove();
+                end
+            end
+            
+            % Don't need to do anything for a slot transition
+        end
+
+        % Set the next time
+        % Times of interest are packet arrivals, slot transitions, and when
+        % packets are done being served. Set current time to the one that
+        % happens first
+        if isempty(toServe)
+            % No more packet arrivals
+            if currentTime >= lastPacketServed
+                currentTime = slotTransition;
+            else
+                currentTime = lastPacketServed;
+            end
+            isPacket = false;
+        else
+            if currentTime >= lastPacketServed
+                currentTime = min(slotTransition, toServe(2,1));
+            else
+                currentTime = min([lastPacketServed, toServe(2, 1)]); 
+            end
+
+            % Check if the next time is a packet arrival
+            if currentTime == toServe(2, 1)
+                isPacket = true;
+                packet = toServe(:, 1);
+                toServe(:, 1) = [];
+            else
+                isPacket = false;
+            end
+        end
+
+        % Check to see if all packets have been served. Check if there are no
+        % more packets to serve and the current time matches the time of the
+        % last packet served
+        stopLoop = isempty(toServe) && (currentTime > lastPacketServed);
+        % Check if all queues are empty
+        for i = 1:numSources
+            % Queue isn't empty, so don't stop the loop
+            if queue{i}.size() ~= 0
+                stopLoop = false;
+            end
+        end
+        % Break the loop if all packets are served
+        if stopLoop
+            break;
+        end
+    end
+
     % Cut off age at final packet served time
-    cutoff = round((currentTime / dt)) + 2;
+    cutoff = uint32(lastPacketServed / dt + 1) + 1;
     t(cutoff:end) = [];
     age(:,cutoff:end) = [];
 
     % Calculate averages to return
     avgAge = sum(age,2)/size(age,2);
-    avgWait = sum(W(2,:)) / totalEvents;
+    avgWait = zeros(numSources, 1);
+    % Go through each wait vector and trim off any remaining zeros
+    for i = 1:numSources
+        W{i} = W{i}(1:packetsServed(i));
+        avgWait(i) = sum(W{i}) / packetsServed(i);
+    end
 
     % Plot the result
     if plotResult
