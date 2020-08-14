@@ -93,14 +93,11 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
     %% Calculate Age
     % Step through important events, such as when the slot changes, when a packet
     % arrives, or when a packet finishes being served.
-    currentTime = min(slotDuration, toServe(2,1));
-    if currentTime == toServe(2,1)
-        packet = toServe(:, 1);
-        toServe(:, 1) = [];
-        isPacket = true;
-    else
-        isPacket = false;
-    end
+    currentTime = toServe(2,1);
+    packet = toServe(:, 1);
+    toServe(:, 1) = [];
+    isPacket = true;
+
     
     % Timestamp of when the most recent packet was served. Initialized to
     % -1 to ensure loop starts with currentTime > lastPacketServed
@@ -113,9 +110,8 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
         % Only need to calculate slot properties when entering a new slot
         if currentTime >= slotTransition
             % Check which source current slot is for
-            [serveSource, slotNumber] = CheckSlot(currentTime, numSources, slotDuration, priority, timeTransmit);
-            % Calculate when the next slot transition occurs
-            slotTransition = (slotNumber + 1) * slotDuration; 
+            [serveSource, slotNumber, slotTransition] = CheckSlot(currentTime, numSources, slotDuration, priority, timeTransmit);
+
         end
 
         % Check were the current time is in relation to lastPacketServed
