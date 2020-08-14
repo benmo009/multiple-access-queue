@@ -11,6 +11,10 @@ function [serveSource, slotNumber, slotTransition] = CheckSlot(time, numSources,
 
     for i = 1:length(slotDuration)
         relativeTime = relativeTime - slotDuration(i);
+        if abs(relativeTime) < 1e-9 || relativeTime == 0
+            continue
+        end
+        
         if relativeTime < 0
             break;
         end
@@ -25,8 +29,15 @@ function [serveSource, slotNumber, slotTransition] = CheckSlot(time, numSources,
         slotNumber = slotNumber + 1;
     end
 
-    timeToNextSlot = -relativeTime; % It should be a negative number
-    slotTransition = time + timeToNextSlot;
+    if serveSource == numSources
+        slotTransition = (slotNumber+1) * totalSlot;
+    else
+        slotTransition = slotNumber * totalSlot;
+        for i = 1:serveSource
+            slotTransition = slotTransition + slotDuration(i);
+        end
+    end
+
     
     % Priority
     idx = find(timeTransmit(2,:) == time);
