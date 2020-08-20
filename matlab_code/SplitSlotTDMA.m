@@ -26,7 +26,7 @@ mu = 1/30;
 
 % Slot duration
 T = 1/mu;
-b = linspace(0.05, 0.95, 100);  % Splitting factor
+b = linspace(0.15, 0.85, 200);  % Splitting factor
 
 % Infinite queue
 queueSize = Inf;
