@@ -18,7 +18,7 @@ numSources = 2;
 
 % Set transmission rates for each source (packet/second)
 lambda = zeros(numSources, 1);
-lambda(1) = 1/60;
+lambda(1) = 0.01;
 lambda(2) = 1/45;
 
 % Set average service rate (packet/seconds)
@@ -26,7 +26,7 @@ mu = 1/30;
 
 % Slot duration
 T = 1/mu;
-b = linspace(0.15, 0.85, 200);  % Splitting factor
+b = linspace(0.15, 0.85, 50);  % Splitting factor
 
 % Infinite queue
 queueSize = Inf;
