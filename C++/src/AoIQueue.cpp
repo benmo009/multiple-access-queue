@@ -16,7 +16,11 @@ AoIQueue::AoIQueue(double end, double dt, double lam, double m) {
     _mu = m;
 
     // Generate number of packet arrivals
-    GenerateNumEvents();
+    _nEvents = 0;
+    while (_nEvents == 0) {
+        GenerateNumEvents();
+    }
+    
 
     // Generate arrival times for each packet
     GenerateArrivals();
