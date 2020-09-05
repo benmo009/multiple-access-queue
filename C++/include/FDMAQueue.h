@@ -1,8 +1,9 @@
 #ifndef FDMAQueue_h_
 #define FDMAQueue_h_
 
-class AoIQueue;
+#include <string>
 
+class AoIQueue;
 
 class FDMAQueue {
 public:
@@ -11,6 +12,15 @@ public:
 
     ~FDMAQueue();
 
+    void print();
+    void printQueues();
+    bool exportData(const std::string& filename);
+
+    double* getAvgAge();
+    double getAvgAge(int source);
+
+    double* getAvgDelay();
+    double getAvgDelay(int source);
 
 private:
     int _nSources;  // Number of sources

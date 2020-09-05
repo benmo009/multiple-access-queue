@@ -33,8 +33,11 @@ FDMAQueue::FDMAQueue(int sources, double* lambda, double mu, double* b, double t
 
     for (int i = 0; i < _nSources; ++i) {
         _queues[i] = new AoIQueue(tFinal, dt, _lambda[i], _b[i]*_mu);
-        _queues[i]->print();
+        
+        _avgAge[i] = _queues[i]->getAvgAge();
+        _avgDelay[i] = _queues[i]->getAvgDelay();
     }
+
 }
 
 FDMAQueue::~FDMAQueue() {

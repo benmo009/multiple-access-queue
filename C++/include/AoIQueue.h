@@ -16,9 +16,11 @@ public:
     ~AoIQueue();
 
     void print();
-    bool exportAge(const std::string& filename);
+    bool exportData(const std::string& filename);
     double getAvgAge() { return _avgAge; }
     double getAvgDelay() { return _avgDelay; }
+
+    void reroll();
 
 private:
     void GenerateNumEvents();

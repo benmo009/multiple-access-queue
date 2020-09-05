@@ -238,7 +238,7 @@ void AoIQueue::print() {
     std::cout << std::endl;
 }
 
-bool AoIQueue::exportAge(const std::string& filename) {
+bool AoIQueue::exportData(const std::string& filename) {
     std::ofstream outFile(filename);
     if (!outFile.good()) {
         std::cerr << "Could not open " << filename << " to write" << std::endl;
