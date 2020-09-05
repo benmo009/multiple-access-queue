@@ -26,14 +26,7 @@ AoIQueue::AoIQueue(double end, double dt, double lam, double m) {
 
     // Calculate when each packet is finished being served
     CalculatePacketServed();
-
-    // Update _tFinal if last packet to be served is finished after the initially
-    // defined _tFinal
-    // if (_timeFinished[_nEvents-1] > _tFinal) {
-    //     _tFinal = _timeFinished[_nEvents-1];
-    //     std::cout << "Update tFinal to " << _tFinal << std::endl;
-    // } 
-    
+   
     // Cut of simulation time to when the last packet was served. This might
     // balance simulations where packets stop being served early on in the
     // simulation
