@@ -38,15 +38,11 @@ AoIQueue::AoIQueue(double end, double dt, double lam, double m) {
     // balance simulations where packets stop being served early on in the
     // simulation
     _tFinal = _timeFinished[_nEvents-1];
-    std::cout << "Update tFinal to " << _tFinal << std::endl;
 
     // Calculate the amount of steps in the simulation
     _nIntervals = (_tFinal / _tStep) + 1;
-    std::cout << "_nIntervals: " << _nIntervals << std::endl;
 
     CalculateAge();
-
-    print();
 }
 
 AoIQueue::~AoIQueue() {
@@ -87,7 +83,6 @@ void AoIQueue::allocateArrays() {
 void AoIQueue::GenerateNumEvents() {
     // Expected number of events based on lambda and total simulation time
     int expectedEvents = _tFinal * _lambda;
-    std::cout << "Expected number of events: " << expectedEvents << std::endl;
 
     // Create random number generator
     std::random_device rd;
@@ -97,7 +92,6 @@ void AoIQueue::GenerateNumEvents() {
 
     // Generate number of transmission events
     _nEvents = poissonDist(generator);
-    std::cout << "Actual number of events: " << _nEvents << std::endl;
 
     // Allocate all arrays that are of size _nEvents
     allocateArrays();
@@ -211,14 +205,14 @@ void AoIQueue::CalculateAge() {
         sumAge += _age[i];
     }
 
-    std::cout << "Final t = " << _time[_nIntervals-1] << std::endl;
-    std::cout << "Final age = " << _age[_nIntervals-1] << std::endl;
-
     // Store the avgerage age
     _avgAge = sumAge / _nIntervals;
 }
 
 void AoIQueue::print() {
+    std::cout << "Total number of events: " << _nEvents << std::endl;
+    std::cout << "lambda: " << _lambda << std::endl;
+    std::cout << "    mu: " << _mu << std::endl;
     // Print data
     std::cout << std::endl;
     std::cout << std::setw(10) << "Arrival";
@@ -238,6 +232,10 @@ void AoIQueue::print() {
     }
 
     std::cout << std::endl;
+
+    std::cout << "Average Age = " << _avgAge << std::endl;
+    std::cout << "Average Delay = " << _avgDelay << std::endl;
+    std::cout << std::endl;
 }
 
 bool AoIQueue::exportAge(const std::string& filename) {
@@ -247,8 +245,10 @@ bool AoIQueue::exportAge(const std::string& filename) {
         return false;
     }
 
+    outFile << "time,age,avgAge" <<std::endl;
+
     for (int i = 0; i < _nIntervals; ++i) {
-        outFile << _time[i] << "  " << _age[i] << "  " << _avgAge << std::endl;
+        outFile << _time[i] << "," << _age[i] << "," << _avgAge << std::endl;
     }
 
     return true;
