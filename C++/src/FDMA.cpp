@@ -17,5 +17,9 @@ int main() {
     double b = 0.5;
     double* bArr = new double[numSources]{b, 1-b};
 
-    FDMAQueue(numSources, lambda, mu, bArr, tFinal, tStep);
+    FDMAQueue fdma(numSources, lambda, mu, bArr, tFinal, tStep);
+
+    fdma.print();
+    //fdma.exportData("data/FDMA/data");
+
 }
