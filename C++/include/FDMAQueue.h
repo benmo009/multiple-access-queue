@@ -23,6 +23,9 @@ public:
     double getAvgDelay(int source);
 
 private:
+    void init();
+
+
     int _nSources;  // Number of sources
     AoIQueue** _queues; // Array of AoIQueues of length _nSources
 
@@ -32,6 +35,9 @@ private:
 
     double* _avgAge;  // stores the average age for each source
     double* _avgDelay;  // stores the average delay for each source
+
+    double _tFinal;
+    double _tStep;
 
 };
 
