@@ -2,9 +2,9 @@
 
 
 int main() {
-    std::ofstream outFile("IncreaseSimTime.csv");
+    std::ofstream outFile("data/IncreaseSimTime.csv");
     if (!outFile.good()) {
-        std::cerr << "Could not open IncreaseSimTime.csv to write" << std::endl;
+        std::cerr << "Could not open data/IncreaseSimTime.csv to write" << std::endl;
         return 1;
     }
 

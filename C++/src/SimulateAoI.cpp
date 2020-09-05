@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     std::cout << "Average Age: " << queue.getAvgAge() << std::endl;
     std::cout << "Average Delay: " << queue.getAvgDelay() << std::endl;
 
-    std::string filename = "AgeOutput.csv";
+    std::string filename = "data/AgeOutput.csv";
     queue.exportData(filename);
 
     return 0;
