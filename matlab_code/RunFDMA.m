@@ -1,13 +1,13 @@
 % RunFDMA.m
 % Simulate the FDMA queue multiple times to collect data
 
-clc
-close all
+%clc
+%close all
 
 % Set simulation parameters
 % Define step size and simulation duration (seconds)
 dt = 0.1;
-tFinal = 1800;
+tFinal = 3600;
 
 % Define number of sources
 numSources = 2;

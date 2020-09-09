@@ -7,6 +7,10 @@ clc
 close all
 
 % Set simulation parameters
+numB = 40;
+numL = 20;
+numSimulations = 50;
+
 % Define step size and simulation duration (seconds)
 dt = 0.1;
 tFinal = 1800;
@@ -14,14 +18,14 @@ tFinal = 1800;
 % Define number of sources
 numSources = 2;
 
-% Set vector of transmission rates to simulate (packet/second)
-lambdaVec = linspace(0.015, 0.04, 10);
-
 % Set average service rate (packet/seconds)
-mu = 1/30;
-b = [0.05:0.05:0.95]; %linspace(0.05, 0.05, 30);
+mu = 1/10;
+b = linspace(0.3, 0.75, numB);
 
-numSimulations = 50;
+% Make sure largest value of lambda doesn't exceed smallest value of mu
+minMu = b(1) * mu;
+lambdaVec = linspace(0.015, minMu, numL);
+
 
 lambdaCombinations = size(lambdaVec,2) ^ 2;
 possibleCombinations = lambdaCombinations * size(b,2);
@@ -72,6 +76,6 @@ xlabel('\lambda_1');
 ylabel('\lambda_2');
 zlabel('Best b value');
 
-save SplitMuFDMA_VaryLambda_results.mat lambdaVec bestB minDiff
+save SplitMuFDMA_VaryLambda_results_large.mat lambdaVec b bestB minDiff
 
 toc
