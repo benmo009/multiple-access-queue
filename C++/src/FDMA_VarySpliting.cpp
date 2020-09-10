@@ -31,6 +31,12 @@ int main(int argc, char* argv[]) {
 
     const int numSources = 2;
     // Define lambda
+    double minLambda = 0.015;
+    double maxLambda = 0.03;
+    int numLambda = 50;
+
+    double* lambdaArr = new double[numLambda];
+
     double lambda[numSources]; // = new double[numSources];
     lambda[0] = 0.0167;
     lambda[1] = 0.025;
