@@ -1,22 +1,23 @@
 #include "FDMAQueue.h"
 #include <iostream>
 #include <fstream>
+#include <math.h>
 
 int main(int argc, char* argv[]) {
-    // // arguments: nSimulations tFinal tStep mu outFile
-    // if (argc != 6) {
-    //     std::cerr << "Invalid arguments." << std::endl;
-    //     std::cerr << "Arguments should be in form:" << std::endl;
-    //     std::cerr << "nSimulations tFinal tStep mu outFile" << std::endl;
-    //     return(1);
-    // }
+    // arguments: nSimulations tFinal tStep mu outFile
+    if (argc != 6) {
+        std::cerr << "Invalid arguments." << std::endl;
+        std::cerr << "Arguments should be in form:" << std::endl;
+        std::cerr << "nSimulations tFinal tStep mu outFile" << std::endl;
+        return(1);
+    }
 
     // Store the arguments
-    int nSimulations = 500; // std::atoi(argv[1]);
-    double tFinal = 1800; // std::atof(argv[2]);
-    double tStep = 0.1; // std::atof(argv[3]);
-    double mu = 0.1; // std::atof(argv[4]);
-    std::string filename = "C++/data/FDMA_SplitMu.csv"; // argv[5];
+    int nSimulations = std::atoi(argv[1]);
+    double tFinal = std::atof(argv[2]);
+    double tStep = std::atof(argv[3]);
+    double mu = std::atof(argv[4]);
+    std::string filename = argv[5]; // "C++/data/FDMA_SplitMu.csv"
 
     // What to store in output?
     // b  avgAge
@@ -30,13 +31,7 @@ int main(int argc, char* argv[]) {
     outFile << "b,source1,source2" << std::endl;
 
     const int numSources = 2;
-    // Define lambda
-    double minLambda = 0.015;
-    double maxLambda = 0.03;
-    int numLambda = 50;
-
-    double* lambdaArr = new double[numLambda];
-
+    // Define Lambda
     double lambda[numSources]; // = new double[numSources];
     lambda[0] = 0.0167;
     lambda[1] = 0.025;
@@ -48,6 +43,9 @@ int main(int argc, char* argv[]) {
 
     double* b = new double[numB]; // Array for storing all b values to simulate
     double** avgAge = new double*[numB]; // Array for storing avg age for each b
+
+    double difference = 100000.0;
+    double bestB;
     
     // Iterate through each b value
     for (int i = 0; i < numB; ++i) {
@@ -79,8 +77,17 @@ int main(int argc, char* argv[]) {
         avgAge[i][0] = sumAvgAge[0] / nSimulations;
         avgAge[i][1] = sumAvgAge[1] / nSimulations;
 
-        outFile << b[i] << "," << avgAge[i][0] << "," << avgAge[i][1] << std::endl;        
+        outFile << b[i] << "," << avgAge[i][0] << "," << avgAge[i][1] << std::endl;   
+
+        // Find the optimal b value
+        if (fabs(avgAge[i][1] - avgAge[i][0]) < difference) {
+            difference = abs(avgAge[i][1] - avgAge[i][0]);
+            bestB = b[i];
+        }     
     }
+
+    std::cout << "Optimal b: " << bestB << std::endl;
+    std::cout << "With difference: " << difference << std::endl;
 
     // Clean up the arrays
     delete [] b;

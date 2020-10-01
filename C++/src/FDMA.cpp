@@ -8,13 +8,13 @@ int main() {
     int numSources = 2;
 
     // Define lambda values for each source
-    double* lambda = new double[numSources]{0.0167, 0.025};
+    double* lambda = new double[numSources]{0.015, 0.015};
 
     // Set overall mu value
     double mu = 0.1;
 
     // Set mu splitting factor
-    double b = 0.5;
+    double b = 0.25;
     double* bArr = new double[numSources]{b, 1-b};
 
     FDMAQueue fdma(numSources, lambda, mu, bArr, tFinal, tStep);
