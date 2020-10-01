@@ -11,18 +11,14 @@
 % Outputs the average age over the duration of the simulation and its
 % standard deviation
 
-function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, priority, queueSize, plotResult)
+function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, plotResult)
     import java.util.LinkedList
+    queueSize = Inf;
+    
 
     % If plotResult argument not given, set to false
-    if nargin <= 8
-        plotResult = false;
-    end
-    if nargin <= 7
-        queueSize = Inf;
-    end
     if nargin <= 6
-        priority = [0, 0];
+        plotResult = false;
     end
 
     % Create time vector
@@ -80,14 +76,11 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
     % Initialize queue and wait vectors. Store them in cell arrays
     queue = cell(numSources,1);
     W = cell(numSources, 1);
-    % Vector to store service times, randomly generated from exponential
-    % distribution, then rounded to the order of the time step
-    S = cell(numSources, 1);
     for i = 1:numSources
         queue{i} = LinkedList();
         W{i} = zeros(1, numEvents(i));
-        S{i} = exprnd(1 / mu, 1, numEvents(i));
-        S{i} = round(S{i} ./ dt) .* dt;
+        %S{i} = exprnd(1 / mu, 1, numEvents(i));
+        %S{i} = round(S{i} ./ dt) .* dt;
     end
 
     %% Calculate Age
@@ -97,6 +90,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
     packet = toServe(:, 1);
     toServe(:, 1) = [];
     isPacket = true;
+    serving = false;
 
     
     % Timestamp of when the most recent packet was served. Initialized to
@@ -105,13 +99,12 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
 
     % Initialize first slot transition to 0
     slotTransition = 0;
-
+    
     while true
         % Only need to calculate slot properties when entering a new slot
         if currentTime >= slotTransition
             % Check which source current slot is for
-            [serveSource, slotNumber, slotTransition] = CheckSlot(currentTime, numSources, slotDuration, priority, timeTransmit);
-
+            [serveSource, slotNumber, slotTransition] = CheckSlot(currentTime, numSources, slotDuration, [0;0], timeTransmit);
         end
 
         % Check were the current time is in relation to lastPacketServed
@@ -133,6 +126,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
                     if queue{source}.size() > queueSize
                         queue{source}.remove();
                     end
+                 
                 else
                     % slot matches the source, calculate when this packet will
                     % be done being served.
@@ -146,28 +140,47 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
                     if queue{source}.size() > queueSize
                         queue{source}.remove();
                     end
-                    packet = [source; queue{source}.remove()];
-                    
-                    packetsServed(source) = packetsServed(source) + 1;
-                    idx = packetsServed(source);
-                    lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
-                    lastPacket = packet;
+                   
+                    if ~serving
+                        % Serve the packet
+                        % Generate a random service time from exponential dist.
+                        S = exprnd(1/mu);
+                        S = round(S ./ dt) .* dt;
+                        serving = true;
+                        % Check if service time will fit within the slot
+                        if S < slotTransition - currentTime
+                            % Service time will fit
+                            % Remove the packet from the queue and serve it
+                            packet = [source; queue{source}.remove()];
+                            packetsServed(source) = packetsServed(source) + 1;
+                            idx = packetsServed(source);
+                            lastPacketServed = packet(2) + S + W{source}(idx);
+                            lastPacket = packet;
+                        end
+                    end
                 end
             % Current Time is a slot transition
             else
                 % Check queue if there is a packet that can be served
                 if queue{serveSource}.size() ~= 0
-                    % Take the packet from the queue
-                    packet = [serveSource; queue{serveSource}.remove()];
-                    source = packet(1);
-
                     % Serve the packet
-                    packetsServed(source) = packetsServed(source) + 1;
-                    idx = packetsServed(source);
-                    % Calculate the time this packet waited in the queue
-                    W{source}(idx) = currentTime - packet(2);
-                    lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
-                    lastPacket = packet;
+                    % Generate a random service time from exponential dist.
+                    S = exprnd(1/mu);
+                    S = round(S ./ dt) .* dt;
+                    serving = true;
+                    if S < slotTransition - currentTime
+                        % Take the packet from the queue
+                        packet = [serveSource; queue{serveSource}.remove()];
+                        source = packet(1);
+
+                        % Serve the packet
+                        packetsServed(source) = packetsServed(source) + 1;
+                        idx = packetsServed(source);
+                        % Calculate the time this packet waited in the queue
+                        W{source}(idx) = currentTime - packet(2);
+                        lastPacketServed = packet(2) + S + W{source}(idx);
+                        lastPacket = packet;
+                    end
                 end
             end
 
@@ -189,6 +202,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
             end
             reduceAge = age(lastPacket(1), ageIndex) - packetAge;
             age(lastPacket(1), ageIndex:end) = age(lastPacket(1), ageIndex:end) - reduceAge;
+            serving = false;
 
             % Add the packet to queue in the case a packet arrived at the same
             % time the server finished
@@ -200,16 +214,22 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
             end
 
             if queue{serveSource}.size() ~= 0
-                % Remove a packet from the queue
-                packet = [serveSource; queue{serveSource}.remove()];
-                source = packet(1);
-                
-                % Serve the packet
-                packetsServed(source) = packetsServed(source) + 1;
-                idx = packetsServed(source);
-                W{source}(idx) = currentTime - packet(2);
-                lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
-                lastPacket = packet;
+                % Generate service time
+                S = exprnd(1/mu);
+                S = round(S ./ dt) .* dt;
+                serving = true;
+                if S < slotTransition - currentTime
+                    % Remove a packet from the queue
+                    packet = [serveSource; queue{serveSource}.remove()];
+                    source = packet(1);
+
+                    % Serve the packet
+                    packetsServed(source) = packetsServed(source) + 1;
+                    idx = packetsServed(source);
+                    W{source}(idx) = currentTime - packet(2);
+                    lastPacketServed = packet(2) + S + W{source}(idx);
+                    lastPacket = packet;
+                end
             end
 
 
@@ -252,6 +272,10 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
                 toServe(:, 1) = [];
             else
                 isPacket = false;
+            end
+            
+            if currentTime == slotTransition
+                serving = false;
             end
         end
 

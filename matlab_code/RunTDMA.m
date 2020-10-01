@@ -32,13 +32,13 @@ priority = [0, 0]; % Both sources have same priority
 
 queueSize = Inf;
 
-numSimulations = 1000;
+numSimulations = 1;
 avgAge = zeros(numSources, numSimulations);
 avgWait = zeros(numSources, numSimulations);
 
 tic
 for i = 1:numSimulations
-    [avgAge(:,i), avgWait(:,i)] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, priority, queueSize);
+    [avgAge(:,i), avgWait(:,i)] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, true);
 end
 toc
 
