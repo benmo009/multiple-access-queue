@@ -15,17 +15,17 @@ numSources = 2;
 
 % Set transmission rates for each source (packet/second)
 lambda = zeros(numSources, 1);
-lambda(1) = 1/60;
-lambda(2) = 1/45;
+lambda(1) = 0.0167;
+lambda(2) = 0.025;
 
 % Set average service rate (packet/seconds)
 mu = 1/30;
-b = linspace(0.15, 0.85, 200);
+b = linspace(0.25, 0.75, 100);
 
 % Infinite queue
 queueSize = Inf;
 
-numSimulations = 100;
+numSimulations = 1000;
 avgAge = zeros(numSources, size(b,2));
 avgWait = zeros(numSources, size(b,2));
 
