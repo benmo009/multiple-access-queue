@@ -46,6 +46,7 @@ AoIQueue::~AoIQueue() {
     clear();
 }
 
+// Initializes member variables
 void AoIQueue::init() {
     // Initialize pointers to NULL
     _timeArrived = NULL;

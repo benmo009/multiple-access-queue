@@ -1,3 +1,6 @@
+// Class for simulating a FCFS m/m/1 queue and measuring the average age of each
+// packet transmitted. 
+
 #ifndef AoIQueue_h_
 #define AoIQueue_h_
 
@@ -21,12 +24,22 @@ public:
     double getAvgDelay() { return _avgDelay; }
 
     void reroll();
+    void exportTransmissions();
 
 private:
-    void GenerateNumEvents();
+    // Generates the number of events for the queue from a binomial distribution
+    void GenerateNumEvents();  
+
+    // Generates a vector of packet arrival times from exponential distribution
     void GenerateArrivals();
+
+    // Generates a vector of service times from exponential distribution
     void GenerateServiceTimes();
+
+    // Calculates when packets get finished serving
     void CalculatePacketServed();
+
+    // Calculates the age of each packet after they get served
     void CalculateAge();
 
     void init();
