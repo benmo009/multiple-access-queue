@@ -6,7 +6,7 @@
 % average age over the duration of the simulation and the average wait time in
 % the queue
 
-function [avgAge, avgWait, served] = FDMA(tFinal, dt, numSources, lambda, mu, queueSize, plotResult)
+function [avgAge, avgWait, served] = FDMA_limit_queue(tFinal, dt, numSources, lambda, mu, queueSize, plotResult)
     % Set plotResult to false if it wasn't given
     if nargin <= 6
         plotResult = false;

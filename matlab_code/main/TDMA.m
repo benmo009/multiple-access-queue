@@ -104,7 +104,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
         % Only need to calculate slot properties when entering a new slot
         if currentTime >= slotTransition
             % Check which source current slot is for
-            [serveSource, slotNumber, slotTransition] = CheckSlot(currentTime, numSources, slotDuration, [0;0], timeTransmit);
+            [serveSource, slotTransition] = CheckSlot(currentTime, slotDuration);
         end
 
         % Check were the current time is in relation to lastPacketServed

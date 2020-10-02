@@ -7,7 +7,7 @@
 % Set simulation parameters
 % Define step size and simulation duration (seconds)
 dt = 0.1;
-tFinal = 3600;
+tFinal = 1800;
 
 % Define number of sources
 numSources = 2;
@@ -19,13 +19,10 @@ lambda(2) = 1/45;
 
 % Set average service rate (packet/seconds)
 mu = 1/30;
-b = 0.3;
+b = 0.5;
 muVec = zeros(numSources, 1);
 muVec(1) = b * mu;
 muVec(2) = (1 - b) * mu;
-
-% Infinite queue
-queueSize = Inf;
 
 numSimulations = 1000;
 avgAge = zeros(numSources, numSimulations);
@@ -34,7 +31,7 @@ avgWait = zeros(numSources, numSimulations);
 tic
 
 for i = 1:numSimulations
-    [avgAge(:, i), avgWait(:, i), served] = FDMA(tFinal, dt, numSources, lambda, muVec, queueSize);
+    [avgAge(:, i), avgWait(:, i)] = FDMA(tFinal, dt, numSources, lambda, muVec);
 end
 
 toc
@@ -47,7 +44,6 @@ stdDevWait = std(avgWait, 0, 2);
 
 fprintf('\nRan %d simulations for FDMA with %d sources.\n', numSimulations, numSources);
 fprintf('Simulation time was %d seconds with step size %s\n', tFinal, strtrim(num2str(dt)));
-fprintf('Maximum Queue Size: %d\n', queueSize);
 
 fprintf('\nlambda:\n');
 for i = 1:numSources

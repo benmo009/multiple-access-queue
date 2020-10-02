@@ -21,24 +21,15 @@ lambda(2) = 1/45;
 mu = 1/30;
 
 % Set slot width
-% Probability of packet arriving is P = 1 - e^(-lambda*t)
-probability = 0.3; % Desired probability that a packet is sent during a slot
-slotDuration = -log(1 - probability) ./ lambda; % Calculate time from
-% Take the larger of the calculated durations
-slotDuration = max(slotDuration);
-slotDuration = round(slotDuration / dt) * dt; % round to same order as time step
+slotDuration = [1/mu; 1/mu];
 
-priority = [0, 0]; % Both sources have same priority
-
-queueSize = Inf;
-
-numSimulations = 1;
+numSimulations = 1000;
 avgAge = zeros(numSources, numSimulations);
 avgWait = zeros(numSources, numSimulations);
 
 tic
 for i = 1:numSimulations
-    [avgAge(:,i), avgWait(:,i)] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, true);
+    [avgAge(:,i), avgWait(:,i)] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu);
 end
 toc
 
@@ -50,8 +41,7 @@ stdDevWait = std(avgWait, 0, 2);
 
 fprintf('\nRan %d simulations for TDMA with %d sources.\n', numSimulations, numSources);
 fprintf('Simulation time was %d seconds with step size %s\n', tFinal, strtrim(num2str(dt)));
-fprintf('Time slot P = %.1f (%.1f s)\n', probability, slotDuration);
-fprintf('Maximum Queue Size: %d\n', queueSize);
+%fprintf('Time slot P = %.1f (%.1f s)\n', probability, slotDuration);
 
 fprintf('\nlambda:\n');
 for i = 1:numSources
