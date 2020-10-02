@@ -6,7 +6,7 @@
 % We're gonna have to edit TDMA.m and CheckSLot.m to get this to work
 
 clc 
-close all
+%close all
 
 % Set simulation parameters
 % Define step size and simulation duration (seconds)
@@ -18,20 +18,17 @@ numSources = 2;
 
 % Set transmission rates for each source (packet/second)
 lambda = zeros(numSources, 1);
-lambda(1) = 0.01;
-lambda(2) = 1/45;
+lambda(1) = 0.0167;
+lambda(2) = 0.025;
 
 % Set average service rate (packet/seconds)
 mu = 1/30;
 
 % Slot duration
-T = 1/mu;
-b = linspace(0.15, 0.85, 50);  % Splitting factor
+T = 2/mu;
+b = linspace(0.25, 0.75, 100);
 
-% Infinite queue
-queueSize = Inf;
-
-numSimulations = 100;
+numSimulations = 1000;
 avgAge = zeros(numSources, size(b, 2));
 avgWait = zeros(numSources, size(b, 2));
 

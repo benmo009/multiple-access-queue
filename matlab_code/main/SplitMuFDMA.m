@@ -22,9 +22,6 @@ lambda(2) = 0.025;
 mu = 1/30;
 b = linspace(0.25, 0.75, 100);
 
-% Infinite queue
-queueSize = Inf;
-
 numSimulations = 1000;
 avgAge = zeros(numSources, size(b,2));
 avgWait = zeros(numSources, size(b,2));
@@ -38,7 +35,7 @@ for i = 1:size(b,2)
     muVec(1) = b(i) * mu;
     muVec(2) = (1 - b(i)) * mu;
     for j = 1:numSimulations
-        [simAvgAge(:,j), simAvgWait(:,j), served] = FDMA(tFinal, dt, numSources, lambda, muVec, queueSize);
+        [simAvgAge(:,j), simAvgWait(:,j)] = FDMA(tFinal, dt, numSources, lambda, muVec);
     end
     avgAge(:,i) = sum(simAvgAge,2) ./ numSimulations;
     avgWait(:,i) = sum(simAvgWait,2) ./ numSimulations;

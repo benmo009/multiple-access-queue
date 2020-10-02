@@ -24,7 +24,7 @@ muVec = zeros(numSources, 1);
 muVec(1) = b * mu;
 muVec(2) = (1 - b) * mu;
 
-numSimulations = 1000;
+numSimulations = 500;
 avgAge = zeros(numSources, numSimulations);
 avgWait = zeros(numSources, numSimulations);
 
