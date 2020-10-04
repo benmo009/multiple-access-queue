@@ -152,7 +152,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
                     packetsServed(source) = packetsServed(source) + 1;
                     idx = packetsServed(source);
                     lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
-                    % lastPacketServed = PacketFinishTime(lastPacketServed, slotDuration, packet);
+                    lastPacketServed = PacketFinishTime(lastPacketServed, slotDuration, packet);
                     lastPacket = packet;
                 end
             % Current Time is a slot transition
@@ -169,7 +169,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
                     % Calculate the time this packet waited in the queue
                     W{source}(idx) = currentTime - packet(2);
                     lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
-                    %lastPacketServed = PacketFinishTime(lastPacketServed, slotDuration, packet);
+                    lastPacketServed = PacketFinishTime(lastPacketServed, slotDuration, packet);
                     lastPacket = packet;
                 end
             end
@@ -212,7 +212,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
                 idx = packetsServed(source);
                 W{source}(idx) = currentTime - packet(2);
                 lastPacketServed = packet(2) + S{source}(idx) + W{source}(idx);
-                % lastPacketServed = PacketFinishTime(lastPacketServed, slotDuration, packet);
+                lastPacketServed = PacketFinishTime(lastPacketServed, slotDuration, packet);
                 lastPacket = packet;
             end
 

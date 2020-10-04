@@ -15,7 +15,7 @@ numSources = 2;
 
 % Set transmission rates for each source (packet/second)
 lambda = zeros(numSources, 1);
-lambda(1) = 1/60;
+lambda(1) = 1/100;
 lambda(2) = 1/45;
 
 % Set average service rate (packet/seconds)
@@ -25,7 +25,7 @@ b = linspace(0.15, 0.85, 200);
 % Infinite queue
 queueSize = Inf;
 
-numSimulations = 100;
+numSimulations = 1;
 avgAge = zeros(numSources, size(b,2));
 avgWait = zeros(numSources, size(b,2));
 
@@ -34,7 +34,7 @@ simAvgWait = zeros(numSources, numSimulations);
 
 tic
 muVec = zeros(numSources, 1);
-for i = 1:size(b,2)
+for i = 1
     muVec(1) = b(i) * mu;
     muVec(2) = (1 - b(i)) * mu;
     for j = 1:numSimulations
