@@ -121,16 +121,16 @@ class AoIQueue:
         plt.show()
       
     # Exports the age and time arrays in a csv file for other programs
-    def exportResults(self):
-        outFile = open("AoIQueueData.csv")
+    def exportResults(self, filename):
+        outFile = open(filename, "w")
         outFile.write("time,age\n")
         for i in range(len(self._age)):
             outFile.write("{:f},{:f}\n".format(self._t[i], self._age[i]))
 
     # Exports timeTransmit and serviceTimes as csv file.
     # Mostly to use with matlab to test that the algorithm is correct
-    def exportSimulationParams(self):
-        outFile = open("AoIQueueSim.csv", "w")
+    def exportSimulationParams(self, filename):
+        outFile = open(filename, "w")
         outFile.write("timeArrived, serviceTimes\n")
         for i in range(self._numPackets):
             outFile.write("{:f},{:f}\n".format(self._timeArrived[i], self._serviceTimes[i]))
