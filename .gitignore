@@ -2,3 +2,5 @@
 .venv/
 
 *.asv
+
+_pycache_/
