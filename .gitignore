@@ -1,3 +1,7 @@
 .vscode/
 
 *.asv
+
+.venv/
+
+__pycache__/
