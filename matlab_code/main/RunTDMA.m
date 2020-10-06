@@ -23,7 +23,7 @@ mu = 1/30;
 % Set slot width
 slotDuration = [1/mu; 1/mu];
 
-numSimulations = 1000;
+numSimulations = 1;
 avgAge = zeros(numSources, numSimulations);
 avgWait = zeros(numSources, numSimulations);
 

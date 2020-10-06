@@ -18,8 +18,8 @@ numSources = 2;
 
 % Set transmission rates for each source (packet/second)
 lambda = zeros(numSources, 1);
-lambda(1) = 0.0167;
-lambda(2) = 0.025;
+lambda(1) = 1/45;
+lambda(2) = 1/45;
 
 % Set average service rate (packet/seconds)
 mu = 1/30;
@@ -41,7 +41,7 @@ for i = 1:length(b)
     slotDuration(1) = b(i) * T;
     slotDuration(2) = (1 - b(i)) * T;
     for j = 1:numSimulations
-        [simAvgAge(:,j), simAvgWait(:,j)] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu);
+        [simAvgAge(:,j), simAvgWait(:,j)] = TDMA_with_slot_end_correction(tFinal, dt, numSources, slotDuration, lambda, mu);
     end
     avgAge(:,i) = sum(simAvgAge,2) ./ numSimulations;
     avgWait(:,i) = sum(simAvgWait,2) ./ numSimulations;

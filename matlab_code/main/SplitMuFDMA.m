@@ -31,7 +31,7 @@ simAvgWait = zeros(numSources, numSimulations);
 
 tic
 muVec = zeros(numSources, 1);
-for i = 1:size(b,2)
+for i = 1
     muVec(1) = b(i) * mu;
     muVec(2) = (1 - b(i)) * mu;
     for j = 1:numSimulations

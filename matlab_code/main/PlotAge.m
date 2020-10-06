@@ -26,5 +26,23 @@ function PlotAge(t, age, lambda, source)
         title(['Source ', num2str(source), ', lambda = ', strtrim(rats(lambda(i)))]);
         legend('Location', 'northwest')
         legend('Age', ['Avg. Age = ', num2str(avgAge(i), 4)]);
+        
+        tFinal = 1800;
+        slotDuration = [4.5;25.5];
+
+        user1_slot_begin = 0:sum(slotDuration):tFinal;
+        user1_slot_end = slotDuration(1):sum(slotDuration):tFinal;
+
+        legend off
+        h = gobjects(size(user1_slot_begin)); 
+        for g = 1:numel(user1_slot_begin)
+            h(g) = xline(user1_slot_begin(g)); 
+        end
+
+        h = gobjects(size(user1_slot_end)); 
+        for g = 1:numel(user1_slot_end)
+            h(g) = xline(user1_slot_end(g)); 
+        end
+       
     end
 end
