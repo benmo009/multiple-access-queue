@@ -36,7 +36,7 @@ slotDuration = round(slotDuration ./ dt) .* dt;
 slotSource = 1;
 
 
-numSimulations = 1;
+numSimulations = 100;
 
 
 % Vectors to store the averages of each probability

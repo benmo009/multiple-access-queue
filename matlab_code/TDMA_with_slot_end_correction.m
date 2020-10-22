@@ -11,20 +11,20 @@
 % Outputs the average age over the duration of the simulation and its
 % standard deviation
 
-function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, priority, queueSize, plotResult)
+function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu, slot_scalar, priority, queueSize, plotResult)
     import java.util.LinkedList
 
     % If plotResult argument not given, set to false
-    if nargin <= 8
+    if nargin <= 9
         plotResult = false;
     end
-    if nargin <= 7
+    if nargin <= 8
         queueSize = Inf;
     end
-    if nargin <= 6
+    if nargin <= 7
         priority = [0, 0];
     end
-
+    slotDuration = slotDuration * slot_scalar;
     % Create time vector
     t = [0:dt:tFinal];
 
@@ -76,7 +76,15 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
 
     % Initialize age matrix
     age = ones(numSources, 1) * t;
-
+    
+    % timestamp s1 timestamp s2
+    % age          age
+    last_age_time = zeros(3, 2);
+    last_age_time(1,:) = [1,2]; % name of the column
+                                % second row is time
+                                % third row is the age
+    
+    
     % Initialize queue and wait vectors. Store them in cell arrays
     queue = cell(numSources,1);
     W = cell(numSources, 1);
@@ -110,7 +118,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
         % Only need to calculate slot properties when entering a new slot
         if currentTime >= slotTransition
             % Check which source current slot is for
-            [serveSource, slotNumber, slotTransition] = CheckSlot(currentTime, numSources, slotDuration, priority, timeTransmit);
+            [serveSource, slotTransition] = CheckSlot(currentTime, slotDuration);
 
         end
 
@@ -192,7 +200,10 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
             end
             reduceAge = age(lastPacket(1), ageIndex) - packetAge;
             age(lastPacket(1), ageIndex:end) = age(lastPacket(1), ageIndex:end) - reduceAge;
-
+            
+            last_age_time(2, lastPacket(1)) = lastPacket(2);
+            last_age_time(3, lastPacket(1)) = reduceAge;
+            
             % Add the packet to queue in the case a packet arrived at the same
             % time the server finished
             if isPacket
@@ -262,7 +273,7 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
         % Check to see if all packets have been served. Check if there are no
         % more packets to serve and the current time matches the time of the
         % last packet served
-        stopLoop = isempty(toServe) && (currentTime > lastPacketServed);
+        stopLoop = (isempty(toServe) && (currentTime > lastPacketServed)) || (currentTime >= tFinal) ;
         % Check if all queues are empty
         for i = 1:numSources
             % Queue isn't empty, so don't stop the loop
@@ -271,7 +282,20 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
             end
         end
         % Break the loop if all packets are served
+        stopLoop = stopLoop || (currentTime >= tFinal);
         if stopLoop
+            for i = 1:numSources
+                %disp('current source is:');
+                %disp(int2str(i));
+                %disp('current size of queue size is:');
+                %disp(int2str(queue{i}.size()));
+                %disp('current size of timetransmit is:')
+                %disp(int2str(size(toServe)));
+                if queue{i}.size() == 0 && ((ismember(i, toServe(1,:))) || isempty(toServe))
+                    time_idx = find(t == last_age_time(2, i));
+                    age(i, time_idx:end) = last_age_time(3, i);
+                end
+            end
             break;
         end
     end
@@ -292,6 +316,6 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
 
     % Plot the result
     if plotResult
-        PlotAge(t, age, lambda);
+        PlotAge(t, age, lambda, slotDuration);
     end
 end

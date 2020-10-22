@@ -1,8 +1,8 @@
 % PlotAge.m
 % Function to plot the age for any number of sources.
 
-function PlotAge(t, age, lambda, source)
-    if nargin == 3
+function PlotAge(t, age, lambda, slotDuration, source)
+    if nargin == 4
         source = 0;
     end
 
@@ -28,7 +28,6 @@ function PlotAge(t, age, lambda, source)
         legend('Age', ['Avg. Age = ', num2str(avgAge(i), 4)]);
         
         tFinal = 1800;
-        slotDuration = [4.5;25.5];
 
         user1_slot_begin = 0:sum(slotDuration):tFinal;
         user1_slot_end = slotDuration(1):sum(slotDuration):tFinal;

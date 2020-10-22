@@ -1,6 +1,8 @@
-function [lastPacketServed] = PacketFinishTime(initial_packet_end_time, slotDuration, packet)
+function [lastPacketServed] = PacketFinishTime(initial_packet_end_time, slotDuration, packet, tFinal)
 	canLeave = true;
-    
+    if nargin <= 4
+        tFinal = 1800;
+    end
     % total period
     total_period = sum(slotDuration);
     % source origin of this packet (1: user 1, 2: user 2)
@@ -38,7 +40,7 @@ function [lastPacketServed] = PacketFinishTime(initial_packet_end_time, slotDura
 		
 		if canLeave
 			t2 = t1 + total_period*p;
-			lastPacketServed = t2;
+			lastPacketServed = min(t2,tFinal);
             break;
         end
     end
