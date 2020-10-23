@@ -43,6 +43,7 @@ if __name__ == "__main__":
     
     avgAge = np.zeros((numSources,))
     for i in range(numSimulations):
+        print("Simulation {:d} out of {:d}".format(i, numSimulations), end="\r")
         fdma = FDMAQueue(tFinal, dt, numSources, arrivalRate, serviceRate)
         avgAge += fdma.getAvgAge()
 
