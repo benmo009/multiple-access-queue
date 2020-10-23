@@ -35,6 +35,7 @@ for i = 1:size(b,2)
     muVec(1) = b(i) * mu;
     muVec(2) = (1 - b(i)) * mu;
     for j = 1:numSimulations
+		fprintf("%d out of %d\r", [j, i])
         [simAvgAge(:,j), simAvgWait(:,j)] = FDMA(tFinal, dt, numSources, lambda, muVec);
     end
     avgAge(:,i) = sum(simAvgAge,2) ./ numSimulations;
