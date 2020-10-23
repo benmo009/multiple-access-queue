@@ -1,7 +1,6 @@
 .vscode/
+.venv/
 
 *.asv
-
-.venv/
 
 __pycache__/
