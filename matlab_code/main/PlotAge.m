@@ -27,6 +27,7 @@ function PlotAge(t, age, lambda, source)
         legend('Location', 'northwest')
         legend('Age', ['Avg. Age = ', num2str(avgAge(i), 4)]);
         
+		%{
         tFinal = 1800;
         slotDuration = [4.5;25.5];
 
@@ -43,6 +44,7 @@ function PlotAge(t, age, lambda, source)
         for g = 1:numel(user1_slot_end)
             h(g) = xline(user1_slot_end(g)); 
         end
+		%}
        
     end
 end
