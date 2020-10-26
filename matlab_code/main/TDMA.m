@@ -101,6 +101,9 @@ function [avgAge, avgWait] = TDMA(tFinal, dt, numSources, slotDuration, lambda, 
     slotTransition = 0;
     
     while true
+		if currentTime >= tFinal
+			break
+		end
         % Only need to calculate slot properties when entering a new slot
         if currentTime >= slotTransition
             % Check which source current slot is for
