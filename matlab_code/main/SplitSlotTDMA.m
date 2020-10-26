@@ -56,7 +56,7 @@ figure
 plot(b, avgAge(1,:), '.')
 hold on
 plot(b, avgAge(2,:), '.')
-legend("Source 1, \lambda = 1/60", "Source 2, \lambda = 1/45")
+legend("Source 1, \lambda = 1/45", "Source 2, \lambda = 1/45")
 
 xlabel('Slot splitting factor, b');
 ylabel('Average Age (s)');
@@ -70,7 +70,7 @@ figure
 plot(b, avgWait(1,:), '.')
 hold on
 plot(b, avgWait(2,:), '.')
-legend("Source 1, \lambda = 1/60", "Source 2, \lambda = 1/45")
+legend("Source 1, \lambda = 1/45", "Source 2, \lambda = 1/45")
 
 xlabel("Slot Splitting Factor, b")
 ylabel("Average Delay (s)")
