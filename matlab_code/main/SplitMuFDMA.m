@@ -13,14 +13,14 @@ tFinal = 1800;
 % Define number of sources
 numSources = 2;
 
-% Set transmission rates for each source (packet/second)
-lambda = zeros(numSources, 1);
-lambda(1) = 0.0167;
-lambda(2) = 0.025;
-
 % Set average service rate (packet/seconds)
 mu = 1/30;
-b = linspace(0.25, 0.75, 100);
+b = linspace(0.3, 0.7, 100);
+
+% Set transmission rates for each source (packet/second)
+lambda = zeros(numSources, 1);
+lambda(1) = mu * min(b) * 0.9;
+lambda(2) = mu * (1 - max(b)) * 0.9;
 
 numSimulations = 1000;
 avgAge = zeros(numSources, size(b,2));
@@ -31,7 +31,7 @@ simAvgWait = zeros(numSources, numSimulations);
 
 tic
 muVec = zeros(numSources, 1);
-for i = 1
+for i = 1:length(b)
     muVec(1) = b(i) * mu;
     muVec(2) = (1 - b(i)) * mu;
     for j = 1:numSimulations
