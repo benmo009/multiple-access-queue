@@ -12,15 +12,18 @@ if __name__ == "__main__":
     # Set number of sources
     numSources = 2
 
-    # Set arrival rates for each source (packet/second)
-    arrivalRate = [1/60, 1/45]
-
     # Set average service rate (packet/second)
     mu = 1/30
 
     # Set splitting factor b
     bLength = 100
-    splitFactor = np.linspace(0.25, 0.75, bLength)
+    splitFactor = np.linspace(0.3, 0.7, bLength)
+
+    # Set arrival rates for each source (packet/second)
+    arrivalRate = [0, 0]
+    # Need to make sure that the arrival rate will always be less than the service rate
+    arrivalRate[0] = mu * min(splitFactor) * 0.3
+    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.9
 
     numSimulations = 1000
     avgAge = np.zeros((bLength, numSources,))
@@ -41,11 +44,21 @@ if __name__ == "__main__":
 
     print("Program took {:.2f}s to run".format(time.time() - start_time) )
 
+    diffAge = abs(avgAge[:,0] - avgAge[:,1])
+    bestB = splitFactor[ np.argmin(diffAge) ]
+    print("b value that minimizes the difference between average age: {:.3f}".format(bestB))
+
+    overallAvgAge = np.sum(avgAge, axis=1) / numSources
+    bestB = splitFactor[np.argmin(overallAvgAge)]
+    print("b value that minimizes the overall average age: {:.3f}".format(bestB))
+
     plt.plot(splitFactor, avgAge[:,0], '.', label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
     plt.plot(splitFactor, avgAge[:,1], '.', label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
+    plt.plot(splitFactor, overallAvgAge, '.', label="Overall Average Age")
     plt.legend()
     plt.xlabel("Splitting Factor, b")
     plt.ylabel("Average Age")
+    plt.title("FDMA Split $\mu$")
     plt.show()
 
     
