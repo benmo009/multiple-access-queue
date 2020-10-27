@@ -53,12 +53,14 @@ function [avgAge, avgWait] = SimulateAoI(tFinal, dt, lambda, mu, plotResult, sou
     packetAge = timeRecieved - timeTransmit;
 
     % Update length of time vector if needed
+	%{
     lastRecieved = max(timeRecieved);
     if lastRecieved > tFinal
         tFinal = lastRecieved + dt;
         t = [0:dt:tFinal];
     end
     t = round(t ./ dt) .* dt;
+	%}
 
     % Calculate Age of Information
     initialAge = 0;
@@ -66,6 +68,9 @@ function [avgAge, avgWait] = SimulateAoI(tFinal, dt, lambda, mu, plotResult, sou
     
     % Iterate through each packet
     for i = 1:numEvents
+		if timeRecieved(i) > tFinal
+			break
+		end
         % Reduce age to match the age of the packet at the time it finished serving
         ageIndex = uint32((timeRecieved(i) /dt) + 1);
         reduceAge = age(ageIndex) - packetAge(i);
