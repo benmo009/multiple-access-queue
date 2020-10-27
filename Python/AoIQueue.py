@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt 
-import helper
+from helper import *
 import math
 
 class AoIQueue:
@@ -11,16 +11,19 @@ class AoIQueue:
         self._lambda = arrivalRate  # Packet Arrival Rate (packets/second)
         self._mu = serviceRate  # Service Rate (packets served/second)
 
+        # Decimal places to round to based on step size
+        precision = int(-math.log10(self._tStep))
+
         # Make time array
         self._t = np.arange(0, self._tFinal + self._tStep, self._tStep)
 
         # Generate array of packet arrival times and store the number of packets
-        self._timeArrived = helper.GenerateTransmissions(self._t, self._lambda)
+        self._timeArrived = GenerateTransmissions(self._t, self._lambda)
         self._numPackets = len(self._timeArrived)
 
         # Generate array of service times
-        array_size = (self._numPackets,)
-        self._serviceTimes = helper.GenerateServiceTime(
+        array_size = self._timeArrived.shape
+        self._serviceTimes = GenerateServiceTime(
             self._mu, self._tStep,  array_size)
 
         # Make array for wait times in queue. The first value is 0
@@ -30,52 +33,51 @@ class AoIQueue:
         # Packet age array to keep track of the age of each packet
         self._packetAge = np.zeros(array_size)
 
-        # Calculate when the first packet gets served
-        firstPacketServed = self._timeArrived[0] + self._serviceTimes[0]
-        self._timeFinished[0] = firstPacketServed
-
-        self._packetAge[0] = self._serviceTimes[0]
-
-        # Go through each packet and calculate when they get served
-        for i in range(1,self._numPackets):
-            if self._timeArrived[i] >= self._timeFinished[i-1]:
-                # Current packet arrived after last packed was finished serving
-                self._delayTime[i] = 0  # It doesn't have to wait
-
-            else:
-                # Packet arrived before last packet is finished serving
-                self._delayTime[i] = self._timeFinished[i-1] - self._timeArrived[i]
-
-            # Calculate when current packet gets served
-            packetServed = self._timeArrived[i] + self._delayTime[i] + self._serviceTimes[i]
-            self._timeFinished[i] = packetServed
-
-            currentPacketAge = packetServed - self._timeArrived[i]
-            self._packetAge[i] = currentPacketAge
-
-        # Update the t array for packets that finished after tFinal
-        if self._timeFinished[-1] > self._tFinal:
-            self._tFinal = self._timeFinished[-1]
-            self._t = np.arange(0, self._tFinal+self._tStep, self._tStep)
-
         # Initialize age array with initial age of 0
         self._age = np.copy(self._t)
 
-        # Iterate through each packet and update the age
+        # Go through each packet and calculate when they get served
         for i in range(self._numPackets):
-            # Decimal places to round to based on step size
-            precision = int(-math.log10(self._tStep))  
+            # Calculate when the first packet gets served
+            if i == 0:
+                # First packet that arrives is only as old as its service time
+                firstPacketServed = self._timeArrived[0] + self._serviceTimes[0]
+                self._timeFinished[0] = firstPacketServed
+                self._packetAge[0] = self._serviceTimes[0]
 
+            # Calculate the age of the rest of the packets
+            else:
+                if self._timeArrived[i] >= self._timeFinished[i-1]:
+                    # Current packet arrived after last packed was finished serving
+                    self._delayTime[i] = 0  # It doesn't have to wait
+
+                else:
+                    # Packet arrived before last packet is finished serving
+                    self._delayTime[i] = self._timeFinished[i-1] - self._timeArrived[i]
+
+                # Calculate when current packet gets served
+                packetServed = self._timeArrived[i] + self._delayTime[i] + self._serviceTimes[i]
+                self._timeFinished[i] = packetServed
+
+                currentPacketAge = packetServed - self._timeArrived[i]
+                self._packetAge[i] = currentPacketAge
+
+            # Update the age for each packet
+        
             # Get the time that current packet finished serving
             currentTime = self._timeFinished[i]  
             currentTime = round(currentTime, precision)
+
+            # Cutoff the simulation at tFinal
+            if currentTime > self._tFinal:
+                break
 
             # Find the corresponding index in the age array
             ageIndex = currentTime / self._tStep
             ageIndex = int(round(ageIndex))
 
             # Check for rounding errors
-            if self._t[ageIndex] - currentTime > 1e-5:
+            if abs(self._t[ageIndex] - currentTime) > 1e-5:
                 print(currentTime, end=' ')
                 print(ageIndex, end=' ')
                 print(self._t[ageIndex])
@@ -110,7 +112,7 @@ class AoIQueue:
             print("{:.1f}".format(self._timeFinished[i]).rjust(10), end='')
             print("{:.1f}".format(self._packetAge[i]).rjust(10))
 
-    def plotAge(self):
+    def plotAge(self, show=True):
         plt.plot(self._t, self._age, label="Age of Information")
         avgAgePlt = self._avgAge * np.ones( np.size(self._age) )
         plt.plot(self._t, avgAgePlt,
@@ -118,6 +120,7 @@ class AoIQueue:
         plt.xlabel("time (s)")
         plt.ylabel("age (s)")
         plt.legend()
+        
         plt.show()
       
     # Exports the age and time arrays in a csv file for other programs
@@ -149,14 +152,13 @@ if __name__ == "__main__":
     arrivalRate = 1/60
     serviceRate = 1/30
 
-    numSimulations = 2000
-    avgAges = np.zeros((numSimulations,))
+    
+    queue = AoIQueue(tFinal, dt, arrivalRate, serviceRate)
+    avgAges = queue.getAvgAge()
 
-    for i in range(numSimulations):
-        queue = AoIQueue(tFinal, dt, arrivalRate, serviceRate)
-        avgAges[i] = queue.getAvgAge()
-
-    print(np.mean(avgAges))
+    queue.exportSimulationParams("AoIQueue_params.csv")
+    queue.exportResults("AoIQueue.csv")
+    queue.plotAge()
     
     
 
