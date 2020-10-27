@@ -21,14 +21,15 @@ lambda(2) = 1/45;
 mu = 1/30;
 
 % Set slot width
-slotDuration = [1/mu; 1/mu];
+slotDuration = [2.5/mu; 2.5/mu];
 
-numSimulations = 1;
+numSimulations = 1000;
 avgAge = zeros(numSources, numSimulations);
 avgWait = zeros(numSources, numSimulations);
 
 tic
 for i = 1:numSimulations
+	fprintf("%d out of %d\r", [ i, numSimulations])
     [avgAge(:,i), avgWait(:,i)] = TDMA(tFinal, dt, numSources, slotDuration, lambda, mu);
 end
 toc
