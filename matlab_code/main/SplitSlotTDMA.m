@@ -19,15 +19,15 @@ numSources = 2;
 % Set transmission rates for each source (packet/second)
 lambda = zeros(numSources, 1);
 
-lambda(1) = 1/45;
-lambda(2) = 1/45;
+lambda(1) = 0.009;
+lambda(2) = 0.009;
 
 % Set average service rate (packet/seconds)
 mu = 1/30;
 
 % Slot duration
 T = 5/mu;
-b = linspace(0.25, 0.75, 100);
+b = linspace(0.25, 0.75, 20);
 
 numSimulations = 1000;
 avgAge = zeros(numSources, size(b, 2));
