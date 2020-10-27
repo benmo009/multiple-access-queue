@@ -27,13 +27,26 @@ class FDMAQueue:
         return self._avgDelay
 
     def plotAge(self):
-        pass
+        fig, axs = plt.subplots(self._numSources,1)
+        for i in range(self._numSources):
+            queue = self._queues[i]
+            avgAge = queue.getAvgAge()
+
+            axs[i].plot(queue._t, queue._age, label="Age")
+            avgAgePlt = avgAge * np.ones(np.size(queue._age))
+            axs[i].plot(queue._t, avgAgePlt,
+                    label="Average Age = {:.2f}".format(avgAge))
+            axs[i].set_xlabel("time (s)")
+            axs[i].set_ylabel("age (s)")
+            axs[i].legend()
+        
+        plt.show()
 
 if __name__ == "__main__":
     tFinal = 3600
     dt = 0.1
     numSources = 2
-    arrivalRate = [1/60, 1/45]
+    arrivalRate = [0.009, 0.009]
     mu = 1/30
 
     b = 0.5
@@ -50,4 +63,7 @@ if __name__ == "__main__":
 
     avgAge = avgAge / numSimulations
     print(avgAge)
+
+    fdma = FDMAQueue(tFinal, dt, numSources, arrivalRate, serviceRate)
+    fdma.plotAge()
             
