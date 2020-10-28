@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Set arrival rates for each source (packet/second)
     arrivalRate = [0, 0]
     # Need to make sure that the arrival rate will always be less than the service rate
-    arrivalRate[0] = mu * min(splitFactor) * 0.3
+    arrivalRate[0] = mu * min(splitFactor) * 0.4
     arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.9
 
     numSimulations = 1000
@@ -44,20 +44,23 @@ if __name__ == "__main__":
     print("Program took {:.2f}s to run".format(time.time() - start_time) )
 
     diffAge = abs(avgAge[:,0] - avgAge[:,1])
-    bestB = splitFactor[ np.argmin(diffAge) ]
-    print("b value that minimizes the difference between average age: {:.3f}".format(bestB))
+    b_minDiff = splitFactor[ np.argmin(diffAge) ]
+    print("b value that minimizes the difference between average age: {:.3f}".format(b_minDiff))
 
     overallAvgAge = np.sum(avgAge, axis=1) / numSources
-    bestB = splitFactor[np.argmin(overallAvgAge)]
-    print("b value that minimizes the overall average age: {:.3f}".format(bestB))
+    b_minOverall = splitFactor[np.argmin(overallAvgAge)]
+    print("b value that minimizes the overall average age: {:.3f}".format(b_minOverall))
 
-    plt.plot(splitFactor, avgAge[:,0], '.', label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
-    plt.plot(splitFactor, avgAge[:,1], '.', label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
-    plt.plot(splitFactor, overallAvgAge, '.', label="Overall Average Age")
-    plt.legend()
-    plt.xlabel("Splitting Factor, b")
-    plt.ylabel("Average Age")
-    plt.title("FDMA Split $\mu$")
+    fig, ax = plt.subplots(1,1)
+
+    ax.plot(splitFactor, avgAge[:,0], '.', label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
+    ax.plot(splitFactor, avgAge[:,1], '.', label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
+    ax.plot(splitFactor, overallAvgAge, '.', label="Overall Average Age")
+    ax.legend()
+    ax.set_xlabel("Splitting Factor, b")
+    ax.set_ylabel("Average Age")
+    ax.set_title("FDMA Split $\mu$")
+
     plt.show()
 
     
