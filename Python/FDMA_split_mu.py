@@ -1,7 +1,6 @@
 from FDMAQueue import FDMAQueue
 import matplotlib.pyplot as plt 
 import numpy as np
-import math
 import time
 
 if __name__ == "__main__":
