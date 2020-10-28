@@ -34,16 +34,14 @@ if __name__ == "__main__":
 
     numSimulations = 1000
 
-    
-    
     start_time = time.time()
     for k in range(len(arrivalRate)):
         lam_1 = arrivalRate[k]
         for l in range(len(arrivalRate)):
-            print("[{:d}/{:d}] lambda = [{:.3f}, {}] ")
             lam_2 = arrivalRate[l]
             # Make array of arrival rates
             lam = [lam_1, lam_2]
+            print("[{:d}/{:d}] lambda = [{:.4f}, {:.4f}]".format(k*l + l, lamLength**2, lam_1, lam_2))
 
             avgAge = np.zeros((bLength, numSources,))
             for i in range(bLength):
@@ -51,13 +49,12 @@ if __name__ == "__main__":
                 serviceRate = [b * mu, (1-b) * mu]
 
                 for j in range(numSimulations):
-                    print("[{:d}/{:d}] Simulation {:d} for b={:.2f}".format(i, bLength, j, b), end='\r')
+                    print("\t[{:d}/{:d}] Simulation {:>4d} for b={:.2f}".format(i, bLength, j, b), end='\r')
                     fdma = FDMAQueue(tFinal, dt, numSources, lam, serviceRate)
                     avgAge[i] += fdma.getAvgAge()
 
                 avgAge[i] = avgAge[i] / numSimulations
-                print("b = {:.2f}, avgAge = [ {:.2f}, {:.2f} ]".format(b, avgAge[i,0], avgAge[i,1]), end='\n')
-            
+                
             # Find best b values
             diffAge = abs(avgAge[:, 0] - avgAge[:, 1])
             b_minDiff[k,l] = splitFactor[np.argmin(diffAge)]
