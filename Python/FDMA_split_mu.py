@@ -21,10 +21,10 @@ if __name__ == "__main__":
     # Set arrival rates for each source (packet/second)
     arrivalRate = [0, 0]
     # Need to make sure that the arrival rate will always be less than the service rate
-    arrivalRate[0] = mu * min(splitFactor) * 0.4
-    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.9
+    arrivalRate[0] = mu * min(splitFactor) * 0.5
+    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.3
 
-    numSimulations = 1000
+    numSimulations = 1000 
     avgAge = np.zeros((bLength, numSources,))
 
     start_time = time.time()
