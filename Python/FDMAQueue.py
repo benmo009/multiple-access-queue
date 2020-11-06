@@ -13,12 +13,14 @@ class FDMAQueue:
         self._queues = []
         self._avgAge = np.zeros((numSources,))
         self._avgDelay = np.zeros((numSources,))
+        self.percentServed = np.zeros((numSources,))
         for i in range(self._numSources):
             lam = self._lambda[i]
             mu = self._mu[i] 
             self._queues.append( AoIQueue(tFinal, tStep, lam, mu) )
-            self._avgAge[i] = self._queues[i].getAvgAge()
-            self._avgDelay[i] = self._queues[i].getAvgDelay()
+            self._avgAge[i] = self._queues[i].avgAge
+            self._avgDelay[i] = self._queues[i].avgDelay
+            self.percentServed[i] = self._queues[i].percentServed
 
     def getAvgAge(self):
         return self._avgAge
@@ -30,7 +32,7 @@ class FDMAQueue:
         fig, axs = plt.subplots(self._numSources,1)
         for i in range(self._numSources):
             queue = self._queues[i]
-            avgAge = queue.getAvgAge()
+            avgAge = queue.avgAge
 
             axs[i].plot(queue._t, queue._age, label="Age")
             avgAgePlt = avgAge * np.ones(np.size(queue._age))
@@ -55,14 +57,18 @@ if __name__ == "__main__":
     numSimulations = 1000
     
     avgAge = np.zeros((numSources,))
+    avgPercentServed = np.zeros((numSources,))
     for i in range(numSimulations):
         print("Simulation {:d} out of {:d}".format(i, numSimulations), end="\r")
         fdma = FDMAQueue(tFinal, dt, numSources, arrivalRate, serviceRate)
         avgAge += fdma.getAvgAge()
+        avgPercentServed += fdma.percentServed
 
 
     avgAge = avgAge / numSimulations
+    avgPercentServed = avgPercentServed / numSimulations
     print(avgAge)
+    print(avgPercentServed)
 
     fdma = FDMAQueue(tFinal, dt, numSources, arrivalRate, serviceRate)
     fdma.plotAge()
