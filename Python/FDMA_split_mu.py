@@ -22,7 +22,7 @@ if __name__ == "__main__":
     arrivalRate = [0, 0]
     # Need to make sure that the arrival rate will always be less than the service rate
     arrivalRate[0] = mu * min(splitFactor) * 0.5
-    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.9
+    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.3
 
     numSimulations = 1000 
     avgAge = np.zeros((bLength, numSources))
@@ -56,12 +56,26 @@ if __name__ == "__main__":
     b_minOverall = splitFactor[np.argmin(overallAvgAge)]
     print("b value that minimizes the overall average age: {:.3f}".format(b_minOverall))
 
+    # Compute theoretical ages
+    serviceRate = np.zeros((numSources, bLength))
+    rho = np.zeros_like(serviceRate)
+
+    serviceRate[0,:] = splitFactor * mu
+    serviceRate[1,:] = (1 - splitFactor) * mu
+
+    rho[0,:] = arrivalRate[0] / serviceRate[0,:]
+    rho[1,:] = arrivalRate[1] / serviceRate[1,:]
+        
+    theoretical_age = (1/serviceRate) * ( (rho**2)/(1-rho) + 1 + (1/rho) )
+
     # Make plots
     fig, ax = plt.subplots(1,1)
 
     ax.plot(splitFactor, avgAge[:,0], '.', label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
     ax.plot(splitFactor, avgAge[:,1], '.', label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
-    ax.plot(splitFactor, overallAvgAge, '.', label="Overall Average Age")
+    #ax.plot(splitFactor, overallAvgAge, '.', label="Overall Average Age")
+    ax.plot(splitFactor, theoretical_age[0,:], label="Theoretical Age, Source 1")
+    ax.plot(splitFactor, theoretical_age[1,:], label="Theoretical Age, Source 2")
     ax.legend()
     ax.set_xlabel("Splitting Factor, b")
     ax.set_ylabel("Average Age")
