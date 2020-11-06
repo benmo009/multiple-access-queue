@@ -22,11 +22,12 @@ if __name__ == "__main__":
     # Set arrival rates for each source (packet/second)
     arrivalRate = [0, 0]
     # Need to make sure that the arrival rate will always be less than the service rate
-    arrivalRate[0] = mu * min(splitFactor) * 0.5
-    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.3
+    arrivalRate[0] = mu * min(splitFactor) * 0.9
+    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.9
 
     numSimulations = 1000
-    avgAge = np.zeros((bLength, numSources,))
+    avgAge = np.zeros((bLength, numSources))
+    avgServed = np.zeros((bLength, numSources))
 
     start_time = time.time()
 
@@ -40,8 +41,10 @@ if __name__ == "__main__":
 
             tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
             avgAge[i] += tdma.getAvgAge()
+            avgServed[i] += tdma.percentServed
 
         avgAge[i] = avgAge[i] / numSimulations
+        avgServed[i] = avgServed[i] / numSimulations
         print("b = {:.2f}, avgAge = [ {:.2f}, {:.2f} ]".format(
             b, avgAge[i, 0], avgAge[i, 1]), end='\n')
 
@@ -65,5 +68,18 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel("Splitting Factor, b")
     plt.ylabel("Average Age")
-    plt.title("TDMA Split Time Slot")
+    plt.title("TDMA Split Time Slot - Age")
+
+
+    # Plot percentage of packets served
+    fig_serve, ax_serve = plt.subplots(1, 1)
+    ax_serve.plot(splitFactor, avgServed[:, 0], '.',
+                  label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
+    ax_serve.plot(splitFactor, avgServed[:, 1], '.',
+                  label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
+    ax_serve.legend()
+    ax_serve.set_xlabel("Splitting Factor, b")
+    ax_serve.set_ylabel("Average Percent Served")
+    ax_serve.set_title("TDMA Split Time Slot - Percent Served")
+
     plt.show()
