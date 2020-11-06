@@ -21,12 +21,12 @@ if __name__ == "__main__":
     # Set arrival rates for each source (packet/second)
     arrivalRate = [0, 0]
     # Need to make sure that the arrival rate will always be less than the service rate
-    arrivalRate[0] = mu * min(splitFactor) * 0.4
+    arrivalRate[0] = mu * min(splitFactor) * 0.5
     arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.9
 
-    numSimulations = 500
-    avgAge = np.zeros((bLength, numSources,))
-    avgJobComp = np.zeros((bLength, numSources,))
+    numSimulations = 1000 
+    avgAge = np.zeros((bLength, numSources))
+    avgServed = np.zeros((bLength, numSources))
 
     start_time = time.time()
 
@@ -38,14 +38,16 @@ if __name__ == "__main__":
             print("[{:d}/{:d}] Simulation {:d} for b={:.2f}".format(i, bLength, j, b), end='\r')
             fdma = FDMAQueue(tFinal, dt, numSources, arrivalRate, serviceRate)
             avgAge[i] += fdma.getAvgAge()
-            avgJobComp[i] += fdma.CompletionPercentage()
+            avgServed[i] += fdma.percentServed
 
         avgAge[i] = avgAge[i] / numSimulations
-        avgJobComp[i] = avgJobComp[i] / numSimulations
-        # print("b = {:.2f}, avgAge = [ {:.2f}, {:.2f} ]".format(b, avgAge[i,0], avgAge[i,1]), end='\n')
+        avgServed[i] = avgServed[i] / numSimulations
+        print("b = {:.2f}, avgAge = [ {:.2f}, {:.2f} ]".format(b, avgAge[i,0], avgAge[i,1]), end='\n')
 
+    # Print the runtime
     print("Program took {:.2f}s to run".format(time.time() - start_time) )
 
+    # Print important b values
     diffAge = abs(avgAge[:,0] - avgAge[:,1])
     b_minDiff = splitFactor[ np.argmin(diffAge) ]
     print("b value that minimizes the difference between average age: {:.3f}".format(b_minDiff))
@@ -54,6 +56,7 @@ if __name__ == "__main__":
     b_minOverall = splitFactor[np.argmin(overallAvgAge)]
     print("b value that minimizes the overall average age: {:.3f}".format(b_minOverall))
 
+    # Make plots
     fig, ax = plt.subplots(1,1)
 
     ax.plot(splitFactor, avgAge[:,0], '.', label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
@@ -62,19 +65,19 @@ if __name__ == "__main__":
     ax.legend()
     ax.set_xlabel("Splitting Factor, b")
     ax.set_ylabel("Average Age")
-    ax.set_title("FDMA Split $\mu$")
-    plt.show()
+    ax.set_title("FDMA Split $\mu$ - Age")
 
-    plt.figure(2)
-    plt.plot(splitFactor, avgJobComp[:, 0], '.',
-             label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
-    plt.plot(splitFactor, avgJobComp[:, 1], '.',
-             label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
-    plt.hlines(y=0.96, xmin=min(splitFactor), xmax=max(splitFactor), color='r')
-    plt.legend()
-    plt.xlabel("Splitting Factor, b")
-    plt.ylabel("Percentage of Packet Served")
-    plt.title("FDMA Split Time Slot")
+    # Plot percentage of packets served
+    fig_serve, ax_serve = plt.subplots(1,1)
+    ax_serve.plot(splitFactor, avgServed[:, 0], '.',
+                label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
+    ax_serve.plot(splitFactor, avgServed[:, 1], '.', 
+                label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
+    ax_serve.legend()
+    ax_serve.set_xlabel("Splitting Factor, b")
+    ax_serve.set_ylabel("Average Percent Served")
+    ax_serve.set_title("FDMA Split $\mu$ - Percent Served")
+
     plt.show()
 
 

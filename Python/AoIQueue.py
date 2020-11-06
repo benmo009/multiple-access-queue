@@ -35,7 +35,8 @@ class AoIQueue:
 
         # Initialize age array with initial age of 0
         self._age = np.copy(self._t)
-        
+        numServed = 0  # Counter for number of packets served
+
         # Go through each packet and calculate when they get served
         for i in range(self._numPackets):
             # Calculate when the first packet gets served
@@ -86,9 +87,13 @@ class AoIQueue:
             reduceAge = self._age[ageIndex] - self._packetAge[i]
             self._age[ageIndex:] -= reduceAge
 
+            numServed += 1
+        
         # Calculate the averages
-        self._avgAge = np.mean(self._age)
-        self._avgDelay = np.mean(self._delayTime)
+        self.avgAge = np.mean(self._age)
+        self.avgDelay = np.mean(self._delayTime)
+
+        self.percentServed = numServed / self._numPackets
 
     # Prints information about the simulation
     def printData(self):
@@ -112,11 +117,11 @@ class AoIQueue:
             print("{:.1f}".format(self._timeFinished[i]).rjust(10), end='')
             print("{:.1f}".format(self._packetAge[i]).rjust(10))
 
-    def plotAge(self, show=True):
+    def plotAge(self):
         plt.plot(self._t, self._age, label="Age of Information")
-        avgAgePlt = self._avgAge * np.ones( np.size(self._age) )
+        avgAgePlt = self.avgAge * np.ones( np.size(self._age) )
         plt.plot(self._t, avgAgePlt,
-                 label="Average Age = {:.2f}".format(self._avgAge))
+                 label="Average Age = {:.2f}".format(self.avgAge))
         plt.xlabel("time (s)")
         plt.ylabel("age (s)")
         plt.legend()
@@ -138,29 +143,29 @@ class AoIQueue:
         for i in range(self._numPackets):
             outFile.write("{:f},{:f}\n".format(self._timeArrived[i], self._serviceTimes[i]))
 
-    # Returns the average age of the simulation
-    def getAvgAge(self):
-        return self._avgAge
+    # # Returns the average age of the simulation
+    # def getAvgAge(self):
+    #     return self._avgAge
 
-    def CompletionPercentage(self):
-        return self._numPacketServed / self._numPackets
+    # # Returns the average delay of the simulation
+    # def getAvgDelay(self):
+    #     return self._avgDelay
 
-    # Returns the average delay of the simulation
-    def getAvgDelay(self):
-        return self._avgDelay
+    # def getPercentServed(self):
+    #     return self._percentServed
 
 if __name__ == "__main__":
-    tFinal = 3600
+    tFinal = 360
     dt = 0.1
     arrivalRate = 1/60
     serviceRate = 1/30
 
     
     queue = AoIQueue(tFinal, dt, arrivalRate, serviceRate)
-    avgAges = queue.getAvgAge()
+    avgAges = queue.avgAge
+    queue.printData()
+    print(queue.percentServed)
 
-    queue.exportSimulationParams("AoIQueue_params.csv")
-    queue.exportResults("AoIQueue.csv")
     queue.plotAge()
     
     

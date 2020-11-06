@@ -63,15 +63,11 @@ class TDMAQueue:
 
         # Initialize variables that will be used later
         self._lastPacketServed = -1
-        slotTransition = 0;
-        serveSource = 0;
+        slotTransition = 0
+        serveSource = 0
+        packetsServed = np.zeros((self._numSources,))
 
         while True:
-            # End the simulation once it reaches tFinal
-            if currentTime > tFinal:
-                break
-            
-
             # Only need to calculate slot properties when entering a new slot
             if currentTime >= slotTransition:
                 serveSource, slotTransition = self.CheckSlot(currentTime)
@@ -101,6 +97,7 @@ class TDMAQueue:
                 # Server just finished, update the age
                 source = int(self._lastPacket[0])
                 packetAge = currentTime - self._lastPacket[1]
+                packetsServed[source] += 1
 
                 # add 1 to count how many packets were served for that user
                 # TODO:
@@ -168,12 +165,13 @@ class TDMAQueue:
                     if len(self._queue[i]) > 0:
                         stopLoop = False
 
-            # End the simulation
-            if stopLoop or currentTime > tFinal:
+            # End the simulation at tFinal or there are no more packets
+            if stopLoop or currentTime >= tFinal:
                 break
         
         # Calculate the averages
         self._avgAge = np.mean(self._age, axis=1)
+        self.percentServed = packetsServed / self._numPackets
 
 
     # Function to generate a service time and checks if the packet can be served       
@@ -274,26 +272,38 @@ if __name__ == "__main__":
     tFinal = 1800
     dt = 0.1
     numSources = 2
-    arrivalRate = [1/60, 1/45]
+    arrivalRate = [0.009, 0.009]
     mu = 1/30
 
     b = 0.5
-    slotWidth = [b * 5/mu, (1-b)*5/mu]
+    T = 4/mu
+    slotWidth = [b * T, (1-b)*T]
 
     numSimulations = 10
 
     avgAge = np.zeros((numSources,))
+    packetsServed = np.zeros((numSources,))
+    avgNumPackets = np.zeros((numSources,))
     start_time = time.time()
     for i in range(numSimulations):
         print("Simulation {:d} out of {:d}".format(
             i, numSimulations), end="\r")
         tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
         avgAge += tdma.getAvgAge()
+        packetsServed += tdma.percentServed
+        avgNumPackets += tdma._numPackets
 
     print("Elapsed Time: {:f}s".format(time.time() - start_time))
     avgAge = avgAge / numSimulations
+    packetsServed = packetsServed / numSimulations
+    avgNumPackets = avgNumPackets / numSimulations
     print(avgAge)
+    print(packetsServed)
+    print(avgNumPackets)
 
     tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
+    print(tdma._numPackets)
+    print(tdma.percentServed)
     tdma.plotAge()
+    
 
