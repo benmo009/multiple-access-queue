@@ -66,11 +66,6 @@ class TDMAQueue:
         packetsServed = np.zeros((self._numSources,))
 
         while True:
-            # End the simulation once it reaches tFinal
-            if currentTime > tFinal:
-                break
-            
-
             # Only need to calculate slot properties when entering a new slot
             if currentTime >= slotTransition:
                 serveSource, slotTransition = self.CheckSlot(currentTime)
@@ -163,8 +158,8 @@ class TDMAQueue:
                     if len(self._queue[i]) > 0:
                         stopLoop = False
 
-            # End the simulation
-            if stopLoop or currentTime > tFinal:
+            # End the simulation at tFinal or there are no more packets
+            if stopLoop or currentTime >= tFinal:
                 break
         
         # Calculate the averages
@@ -265,16 +260,18 @@ if __name__ == "__main__":
     tFinal = 1800
     dt = 0.1
     numSources = 2
-    arrivalRate = [1/60, 1/45]
+    arrivalRate = [0.009, 0.009]
     mu = 1/30
 
     b = 0.5
-    slotWidth = [b * 5/mu, (1-b)*5/mu]
+    T = 4/mu
+    slotWidth = [b * T, (1-b)*T]
 
     numSimulations = 1000
 
     avgAge = np.zeros((numSources,))
     packetsServed = np.zeros((numSources,))
+    avgNumPackets = np.zeros((numSources,))
     start_time = time.time()
     for i in range(numSimulations):
         print("Simulation {:d} out of {:d}".format(
@@ -282,12 +279,15 @@ if __name__ == "__main__":
         tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
         avgAge += tdma.getAvgAge()
         packetsServed += tdma.percentServed
+        avgNumPackets += tdma._numPackets
 
     print("Elapsed Time: {:f}s".format(time.time() - start_time))
     avgAge = avgAge / numSimulations
     packetsServed = packetsServed / numSimulations
+    avgNumPackets = avgNumPackets / numSimulations
     print(avgAge)
     print(packetsServed)
+    print(avgNumPackets)
 
     tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
     print(tdma._numPackets)
