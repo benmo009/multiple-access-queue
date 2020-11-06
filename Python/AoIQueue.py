@@ -20,7 +20,7 @@ class AoIQueue:
         # Generate array of packet arrival times and store the number of packets
         self._timeArrived = GenerateTransmissions(self._t, self._lambda)
         self._numPackets = len(self._timeArrived)
-
+        self._numPacketServed = 0
         # Generate array of service times
         array_size = self._timeArrived.shape
         self._serviceTimes = GenerateServiceTime(
@@ -35,7 +35,7 @@ class AoIQueue:
 
         # Initialize age array with initial age of 0
         self._age = np.copy(self._t)
-
+        
         # Go through each packet and calculate when they get served
         for i in range(self._numPackets):
             # Calculate when the first packet gets served
@@ -63,11 +63,11 @@ class AoIQueue:
                 self._packetAge[i] = currentPacketAge
 
             # Update the age for each packet
-        
+            self._numPacketServed += 1
             # Get the time that current packet finished serving
             currentTime = self._timeFinished[i]  
             currentTime = round(currentTime, precision)
-
+            
             # Cutoff the simulation at tFinal
             if currentTime > self._tFinal:
                 break
@@ -85,7 +85,7 @@ class AoIQueue:
             # Decrease the age to the age of the packet that just got served
             reduceAge = self._age[ageIndex] - self._packetAge[i]
             self._age[ageIndex:] -= reduceAge
-        
+
         # Calculate the averages
         self._avgAge = np.mean(self._age)
         self._avgDelay = np.mean(self._delayTime)
@@ -141,6 +141,9 @@ class AoIQueue:
     # Returns the average age of the simulation
     def getAvgAge(self):
         return self._avgAge
+
+    def CompletionPercentage(self):
+        return self._numPacketServed / self._numPackets
 
     # Returns the average delay of the simulation
     def getAvgDelay(self):

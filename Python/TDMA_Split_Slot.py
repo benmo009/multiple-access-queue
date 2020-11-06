@@ -2,6 +2,7 @@ from TDMAQueue import TDMAQueue
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+import pickle as pl
 
 if __name__ == "__main__":
     # Set simulation step size and duration (seconds)
@@ -23,10 +24,11 @@ if __name__ == "__main__":
     arrivalRate = [0, 0]
     # Need to make sure that the arrival rate will always be less than the service rate
     arrivalRate[0] = mu * min(splitFactor) * 0.5
-    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.3
+    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.5
 
-    numSimulations = 1000
+    numSimulations = 500
     avgAge = np.zeros((bLength, numSources,))
+    avgJobComp = np.zeros((bLength, numSources,))
 
     start_time = time.time()
 
@@ -40,10 +42,12 @@ if __name__ == "__main__":
 
             tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
             avgAge[i] += tdma.getAvgAge()
+            avgJobComp[i] += tdma.CompletionPercentage()
 
         avgAge[i] = avgAge[i] / numSimulations
-        print("b = {:.2f}, avgAge = [ {:.2f}, {:.2f} ]".format(
-            b, avgAge[i, 0], avgAge[i, 1]), end='\n')
+        avgJobComp[i] = avgJobComp[i] / numSimulations
+        # print("b = {:.2f}, avgJobComp = [ {:.2f}, {:.2f} ]".format(
+        #     b, avgJobComp[i, 0], avgJobComp[i, 1]), end='\n');
 
     print("Program took {:.2f}s to run".format(time.time() - start_time))
 
@@ -57,6 +61,7 @@ if __name__ == "__main__":
     print(
         "b value that minimizes the overall average age: {:.3f}".format(bestB))
 
+    plt.figure(1)
     plt.plot(splitFactor, avgAge[:, 0], '.',
              label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
     plt.plot(splitFactor, avgAge[:, 1], '.',
@@ -65,5 +70,18 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel("Splitting Factor, b")
     plt.ylabel("Average Age")
+    plt.title("TDMA Split Time Slot")
+    plt.show()
+    
+    plt.figure(2)
+    filename = 'percentage_done_u1l_%s' % T1
+    plt.plot(splitFactor, avgJobComp[:, 0], '.',
+             label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
+    plt.plot(splitFactor, avgJobComp[:, 1], '.',
+             label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
+    plt.hlines(y=0.96, xmin=min(splitFactor), xmax=max(splitFactor), color='r')
+    plt.legend()
+    plt.xlabel("Splitting Factor, b")
+    plt.ylabel("Percentage of Packet Served")
     plt.title("TDMA Split Time Slot")
     plt.show()

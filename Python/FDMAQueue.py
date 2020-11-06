@@ -13,10 +13,14 @@ class FDMAQueue:
         self._queues = []
         self._avgAge = np.zeros((numSources,))
         self._avgDelay = np.zeros((numSources,))
+        
+        self._numPacketServed = np.zeros((self._numSources,), dtype=int)
+
         for i in range(self._numSources):
             lam = self._lambda[i]
             mu = self._mu[i] 
             self._queues.append( AoIQueue(tFinal, tStep, lam, mu) )
+            self._numPacketServed[i] = self._queues[i].CompletionPercentage()
             self._avgAge[i] = self._queues[i].getAvgAge()
             self._avgDelay[i] = self._queues[i].getAvgDelay()
 
@@ -25,6 +29,9 @@ class FDMAQueue:
 
     def getAvgDelay(self):
         return self._avgDelay
+
+    def CompletionPercentage(self):
+        return self._numPacketServed
 
     def plotAge(self):
         fig, axs = plt.subplots(self._numSources,1)

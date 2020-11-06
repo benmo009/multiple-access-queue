@@ -22,6 +22,8 @@ class TDMAQueue:
         self._timeArrived.shape = (2,0)
         self._queue = []
 
+        self._numPacketServed = np.zeros((self._numSources,), dtype=int)
+
         for i in range(self._numSources):
             # Generate arrival times for each source
             transmissions = GenerateTransmissions(self._t, self._lambda[i])
@@ -99,6 +101,11 @@ class TDMAQueue:
                 # Server just finished, update the age
                 source = int(self._lastPacket[0])
                 packetAge = currentTime - self._lastPacket[1]
+
+                # add 1 to count how many packets were served for that user
+                # TODO:
+                # print('source {} is served'.format(source))
+                self._numPacketServed[source] += 1
 
                 # Find index in t that corresponds to current time
                 ageIndex = currentTime / tStep
@@ -240,9 +247,13 @@ class TDMAQueue:
     def getAvgAge(self):
         return self._avgAge
 
-
-    # Plots the age curves of each source
-    def plotAge(self):
+    def CompletionPercentage(self):
+        return self._numPacketServed / self._numPackets
+    
+    def plotJobCompletion(self):
+        '''
+        This method here helps to plot percentage of job done
+        '''
         fig,axs = plt.subplots(self._numSources,1)
         for i in range(self._numSources):
             # Plot the age vs time
@@ -257,6 +268,7 @@ class TDMAQueue:
             axs[i].legend()
 
         plt.show()
+        return 
 
 if __name__ == "__main__":
     tFinal = 1800
@@ -268,7 +280,7 @@ if __name__ == "__main__":
     b = 0.5
     slotWidth = [b * 5/mu, (1-b)*5/mu]
 
-    numSimulations = 1000
+    numSimulations = 10
 
     avgAge = np.zeros((numSources,))
     start_time = time.time()
