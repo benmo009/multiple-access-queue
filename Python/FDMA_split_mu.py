@@ -5,7 +5,7 @@ import time
 
 if __name__ == "__main__":
     # Set simulation step size and duration (seconds)
-    tFinal = 1800
+    tFinal = 18000
     dt = 0.1
 
     # Set number of sources
@@ -15,14 +15,14 @@ if __name__ == "__main__":
     mu = 1/30
 
     # Set splitting factor b
-    bLength = 100
+    bLength = 15
     splitFactor = np.linspace(0.3, 0.7, bLength)
 
     # Set arrival rates for each source (packet/second)
     arrivalRate = [0, 0]
     # Need to make sure that the arrival rate will always be less than the service rate
-    arrivalRate[0] = mu * min(splitFactor) * 0.5
-    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.3
+    arrivalRate[0] = mu * min(splitFactor) * 0.9
+    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.9
 
     numSimulations = 1000 
     avgAge = np.zeros((bLength, numSources))
@@ -73,6 +73,9 @@ if __name__ == "__main__":
 
     ax.plot(splitFactor, avgAge[:,0], '.', label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
     ax.plot(splitFactor, avgAge[:,1], '.', label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
+
+    ylim = ax.get_ylim()
+    ax.set_ylim(ylim)
     #ax.plot(splitFactor, overallAvgAge, '.', label="Overall Average Age")
     ax.plot(splitFactor, theoretical_age[0,:], label="Theoretical Age, Source 1")
     ax.plot(splitFactor, theoretical_age[1,:], label="Theoretical Age, Source 2")
