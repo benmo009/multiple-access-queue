@@ -3,7 +3,7 @@ from operator import truediv
 import numpy as np
 import matplotlib.pyplot as plt 
 import math
-from helper import *
+from helper import GenerateTransmissions, GenerateServiceTime
 import time
 
 class TDMAQueue:
@@ -254,6 +254,7 @@ class TDMAQueue:
             axs[i].set_ylabel("Age (s)")
             axs[i].legend()
 
+        fig.tight_layout()
         plt.show()
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt 
-from helper import *
+from helper import GenerateTransmissions, GenerateServiceTime
 import math
 
 class AoIQueue:

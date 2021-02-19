@@ -42,6 +42,7 @@ class FDMAQueue:
             axs[i].set_ylabel("age (s)")
             axs[i].legend()
         
+        fig.tight_layout()
         plt.show()
 
 if __name__ == "__main__":

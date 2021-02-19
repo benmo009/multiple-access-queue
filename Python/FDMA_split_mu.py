@@ -71,26 +71,26 @@ if __name__ == "__main__":
     # Make plots
     fig, ax = plt.subplots(1,1)
 
-    ax.plot(splitFactor, avgAge[:,0], '.', label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
-    ax.plot(splitFactor, avgAge[:,1], '.', label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
+    ax.plot(splitFactor, avgAge[:,0], '.', label="Source 1, $\\lambda$ = {:.3f}".format(arrivalRate[0]))
+    ax.plot(splitFactor, avgAge[:,1], '.', label="Source 2, $\\lambda$ = {:.3f}".format(arrivalRate[1]))
     #ax.plot(splitFactor, overallAvgAge, '.', label="Overall Average Age")
     ax.plot(splitFactor, theoretical_age[0,:], label="Theoretical Age, Source 1")
     ax.plot(splitFactor, theoretical_age[1,:], label="Theoretical Age, Source 2")
     ax.legend()
     ax.set_xlabel("Splitting Factor, b")
     ax.set_ylabel("Average Age")
-    ax.set_title("FDMA Split $\mu$ - Age")
+    ax.set_title("FDMA Split $\\mu$ - Age")
 
     # Plot percentage of packets served
     fig_serve, ax_serve = plt.subplots(1,1)
     ax_serve.plot(splitFactor, avgServed[:, 0], '.',
-                label="Source 1, $\lambda$ = {:.3f}".format(arrivalRate[0]))
+                label="Source 1, $\\lambda$ = {:.3f}".format(arrivalRate[0]))
     ax_serve.plot(splitFactor, avgServed[:, 1], '.', 
-                label="Source 2, $\lambda$ = {:.3f}".format(arrivalRate[1]))
+                label="Source 2, $\\lambda$ = {:.3f}".format(arrivalRate[1]))
     ax_serve.legend()
     ax_serve.set_xlabel("Splitting Factor, b")
     ax_serve.set_ylabel("Average Percent Served")
-    ax_serve.set_title("FDMA Split $\mu$ - Percent Served")
+    ax_serve.set_title("FDMA Split $\\mu$ - Percent Served")
 
     plt.show()
 
