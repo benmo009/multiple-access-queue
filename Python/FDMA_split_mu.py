@@ -5,7 +5,7 @@ import time
 
 if __name__ == "__main__":
     # Set simulation step size and duration (seconds)
-    tFinal = 1800
+    tFinal = 18000
     dt = 0.1
 
     # Set number of sources
@@ -15,14 +15,14 @@ if __name__ == "__main__":
     mu = 1/30
 
     # Set splitting factor b
-    bLength = 100
+    bLength = 15
     splitFactor = np.linspace(0.3, 0.7, bLength)
 
     # Set arrival rates for each source (packet/second)
     arrivalRate = [0, 0]
     # Need to make sure that the arrival rate will always be less than the service rate
-    arrivalRate[0] = mu * min(splitFactor) * 0.5
-    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.3
+    arrivalRate[0] = mu * min(splitFactor) * 0.9
+    arrivalRate[1] = mu * (1 - max(splitFactor)) * 0.9
 
     numSimulations = 1000 
     avgAge = np.zeros((bLength, numSources))
@@ -80,6 +80,9 @@ if __name__ == "__main__":
     ax.set_xlabel("Splitting Factor, b")
     ax.set_ylabel("Average Age")
     ax.set_title("FDMA Split $\\mu$ - Age")
+
+    ylim = ax.get_ylim()
+    ax.set_ylim(ylim)
 
     # Plot percentage of packets served
     fig_serve, ax_serve = plt.subplots(1,1)

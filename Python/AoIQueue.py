@@ -15,11 +15,15 @@ class AoIQueue:
         precision = int(-math.log10(self._tStep))
 
         # Make time array
-        self._t = np.arange(0, self._tFinal + self._tStep, self._tStep)
+        padding = 5 * 1/self._lambda  # Add some time to the begining to average 10 packet arrivals 
+        self._t = np.arange(0, padding + self._tFinal + self._tStep, self._tStep)
+        start_time = padding
+        end_time = max(self._t) #- padding
 
         # Generate array of packet arrival times and store the number of packets
         self._timeArrived = GenerateTransmissions(self._t, self._lambda)
-        self._numPackets = len(self._timeArrived)
+        # relavant_packets = np.where( np.logical_and(self._timeArrived >= start_time, self._timeArrived <= end_time) )
+        # self._numPackets = len( relavant_packets[0] )
 
         # Generate array of service times
         array_size = self._timeArrived.shape
@@ -38,7 +42,7 @@ class AoIQueue:
         numServed = 0  # Counter for number of packets served
 
         # Go through each packet and calculate when they get served
-        for i in range(self._numPackets):
+        for i in range(len(self._timeArrived)):
             # Calculate when the first packet gets served
             if i == 0:
                 # First packet that arrives is only as old as its service time
@@ -70,7 +74,7 @@ class AoIQueue:
             currentTime = round(currentTime, precision)
 
             # Cutoff the simulation at tFinal
-            if currentTime > self._tFinal:
+            if currentTime > end_time:
                 break
 
             # Find the corresponding index in the age array
@@ -87,13 +91,25 @@ class AoIQueue:
             reduceAge = self._age[ageIndex] - self._packetAge[i]
             self._age[ageIndex:] -= reduceAge
 
-            numServed += 1
-        
+            if currentTime >= start_time and currentTime <= end_time:
+                numServed += 1
+
+
+        # Cutoff the padding at the beginning
+        self._t = np.arange(0, self._tFinal+self._tStep, self._tStep)
+        start_idx = int( start_time / self._tStep )
+        end_idx = int( end_time / self._tStep ) + 1
+        self._age = self._age[start_idx:end_idx] 
+
+
         # Calculate the averages
         self.avgAge = np.mean(self._age)
         self.avgDelay = np.mean(self._delayTime)
 
-        self.percentServed = numServed / self._numPackets
+        # Expected number of packets for the time window
+        packets_expected = self._tFinal * self._lambda
+        self.percentServed = numServed / packets_expected
+
 
     # Prints information about the simulation
     def printData(self):
@@ -110,7 +126,7 @@ class AoIQueue:
         print("Finished".rjust(10), end='')
         print("Age".rjust(10))
 
-        for i in range(self._numPackets):
+        for i in range(len(self._timeArrived)):
             print("{:.1f}".format(self._timeArrived[i]).rjust(10), end='')
             print("{:.1f}".format(self._serviceTimes[i]).rjust(10), end='')
             print("{:.1f}".format(self._delayTime[i]).rjust(10), end='')
@@ -118,15 +134,15 @@ class AoIQueue:
             print("{:.1f}".format(self._packetAge[i]).rjust(10))
 
     def plotAge(self):
-        plt.plot(self._t, self._age, label="Age of Information")
+        fig, ax = plt.subplots()
+        ax.plot(self._t, self._age, label="Age of Information")
         avgAgePlt = self.avgAge * np.ones( np.size(self._age) )
-        plt.plot(self._t, avgAgePlt,
+        ax.plot(self._t, avgAgePlt,
                  label="Average Age = {:.2f}".format(self.avgAge))
-        plt.xlabel("time (s)")
-        plt.ylabel("age (s)")
-        plt.legend()
+        ax.set_xlabel("time (s)")
+        ax.set_ylabel("age (s)")
+        ax.legend()
         
-        plt.show()
       
     # Exports the age and time arrays in a csv file for other programs
     def exportResults(self, filename):
@@ -155,18 +171,21 @@ class AoIQueue:
     #     return self._percentServed
 
 if __name__ == "__main__":
-    tFinal = 360
+    tFinal = 18000
     dt = 0.1
-    arrivalRate = 1/60
+    arrivalRate = 1/200
     serviceRate = 1/30
 
     
     queue = AoIQueue(tFinal, dt, arrivalRate, serviceRate)
+    
+
     avgAges = queue.avgAge
     queue.printData()
     print(queue.percentServed)
 
     queue.plotAge()
+    plt.show()
     
     
 
