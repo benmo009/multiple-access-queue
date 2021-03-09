@@ -14,13 +14,16 @@ class TDMAQueue:
         self._mu = serviceRate
 
         # Make time array
-        self._t = np.arange(0, tFinal + tStep, tStep)
+        self._padding = 5 * 1/np.mean(self._lambda)  # Add some time to the begining to average 5 packet arrivals 
+        self._t = np.arange(0, tFinal + self._padding + tStep, tStep)
 
         # Generate array of packet arrival times and store the number of packets
         self._numPackets = np.zeros((self._numSources,), dtype=int)
         self._timeArrived = np.array([])
         self._timeArrived.shape = (2,0)
         self._queue = []
+        self._queueWait = {}
+        self._delay = {}
 
         for i in range(self._numSources):
             # Generate arrival times for each source
@@ -38,6 +41,8 @@ class TDMAQueue:
 
             # Initialize the queue for each source
             self._queue.append(deque())
+            self._queueWait[i] = []
+            self._delay[i] = []
         
         # Sort the arrival times from first to last
         idx = np.argsort(self._timeArrived[1,:])
@@ -78,7 +83,7 @@ class TDMAQueue:
                     # Put the packet into the queue. In the case a packet arrives at
                     # the same time as a slot transition, there may be an older
                     # packet in the queue that has to be served first
-                    source = self.AddToQueue(packet)
+                    source = self.AddToQueue(packet, currentTime)
 
                     # Check if its in the right slot
                     if serveSource == source and not self._serving:
@@ -108,7 +113,7 @@ class TDMAQueue:
 
                 # Check if a packet also arrived at this time
                 if self._isPacket:
-                    source = self.AddToQueue(packet)
+                    source = self.AddToQueue(packet, currentTime)
                 # Check if there are any packets in the queue to serve               
                 if len(self._queue[serveSource]) != 0:
                     self.ServePacket(serveSource, currentTime, slotTransition, tStep)
@@ -117,7 +122,7 @@ class TDMAQueue:
                 # Packet arrived while the server is busy
                 if self._isPacket:
                     # Put the packet in the queue
-                    source = self.AddToQueue(packet)
+                    source = self.AddToQueue(packet, currentTime)
                 
             
             # Figure out the next time step to go to
@@ -162,11 +167,24 @@ class TDMAQueue:
             if stopLoop or currentTime >= tFinal:
                 break
         
+        # Take the age minus the padding
+        pad_idx = int(self._padding / tStep)
+        self._age = self._age[:,pad_idx::]
+        self._t = self._t[pad_idx::]
+        self._t -= self._padding
+        
         # Calculate the averages
         self._avgAge = np.mean(self._age, axis=1)
         self.percentServed = packetsServed / self._numPackets
 
+        # Compute average delay
+        self._avgDelay = np.zeros_like(self._avgAge)
+        self._avgQueueWait = np.zeros_like(self._avgAge)
+        for source in range(self._numSources):
+            self._avgDelay[source] = np.mean(self._delay[source])
+            self._avgQueueWait[source] = np.mean(self._queueWait[source])
 
+        
     # Function to generate a service time and checks if the packet can be served       
     def ServePacket(self, source, currentTime, slotTransition, dt):
         # Generate the service time
@@ -179,11 +197,17 @@ class TDMAQueue:
             # Packet can be served within its slot
             source = int(source)
             self._lastPacket = self._queue[source].popleft()
+            packet_arrival_time = self._lastPacket[1]
             self._lastPacketServed = currentTime + S
+
+            # Add the total time it spent in the system to delay dictionary
+            if currentTime >= self._padding:
+                self._delay[source].append(self._lastPacketServed - packet_arrival_time)
+                self._queueWait[source].append(currentTime - packet_arrival_time)
 
 
     # Adds a packet to the queue and returns the source number
-    def AddToQueue(self, packet):
+    def AddToQueue(self, packet, currentTime):
         source = int(packet[0])
         self._queue[source].append(packet)
         return source
@@ -238,6 +262,11 @@ class TDMAQueue:
     def getAvgAge(self):
         return self._avgAge
 
+    def getAvgDelay(self):
+        return self._avgDelay
+
+    def getAvgQueueWait(self):
+        return self._avgQueueWait
 
     # Plots the age curves of each source
     def plotAge(self):
@@ -247,9 +276,9 @@ class TDMAQueue:
             axs[i].plot(self._t, self._age[i,:], label="Age")
 
             # Plot the average age
-            avgAgePlt = avgAge[i] * np.ones(np.size(self._t))
+            avgAgePlt = self._avgAge[i] * np.ones(np.size(self._t))
             axs[i].plot(self._t, avgAgePlt,
-                        label="Average Age = {:.2f}".format(avgAge[i]))
+                        label="Average Age = {:.2f}".format(self._avgAge[i]))
             axs[i].set_xlabel("Time (s)")
             axs[i].set_ylabel("Age (s)")
             axs[i].legend()
@@ -268,31 +297,40 @@ if __name__ == "__main__":
     T = 4/mu
     slotWidth = [b * T, (1-b)*T]
 
-    numSimulations = 1000
-
-    avgAge = np.zeros((numSources,))
-    packetsServed = np.zeros((numSources,))
-    avgNumPackets = np.zeros((numSources,))
-    start_time = time.time()
-    for i in range(numSimulations):
-        print("Simulation {:d} out of {:d}".format(
-            i, numSimulations), end="\r")
-        tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
-        avgAge += tdma.getAvgAge()
-        packetsServed += tdma.percentServed
-        avgNumPackets += tdma._numPackets
-
-    print("Elapsed Time: {:f}s".format(time.time() - start_time))
-    avgAge = avgAge / numSimulations
-    packetsServed = packetsServed / numSimulations
-    avgNumPackets = avgNumPackets / numSimulations
-    print(avgAge)
-    print(packetsServed)
-    print(avgNumPackets)
-
     tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
-    print(tdma._numPackets)
-    print(tdma.percentServed)
     tdma.plotAge()
+    print(tdma.getAvgDelay())
+    print(tdma._delay)
+
+    print(tdma.getAvgQueueWait())
+    print(tdma._queueWait)
+
+
+    # numSimulations = 1000
+
+    # avgAge = np.zeros((numSources,))
+    # packetsServed = np.zeros((numSources,))
+    # avgNumPackets = np.zeros((numSources,))
+    # start_time = time.time()
+    # for i in range(numSimulations):
+    #     print("Simulation {:d} out of {:d}".format(
+    #         i, numSimulations), end="\r")
+    #     tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
+    #     avgAge += tdma.getAvgAge()
+    #     packetsServed += tdma.percentServed
+    #     avgNumPackets += tdma._numPackets
+
+    # print("Elapsed Time: {:f}s".format(time.time() - start_time))
+    # avgAge = avgAge / numSimulations
+    # packetsServed = packetsServed / numSimulations
+    # avgNumPackets = avgNumPackets / numSimulations
+    # print(avgAge)
+    # print(packetsServed)
+    # print(avgNumPackets)
+
+    # tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
+    # print(tdma._numPackets)
+    # print(tdma.percentServed)
+    # tdma.plotAge()
     
 
