@@ -22,8 +22,7 @@ class AoIQueue:
 
         # Generate array of packet arrival times and store the number of packets
         self._timeArrived = GenerateTransmissions(self._t, self._lambda)
-        # relavant_packets = np.where( np.logical_and(self._timeArrived >= start_time, self._timeArrived <= end_time) )
-        # self._numPackets = len( relavant_packets[0] )
+          
 
         # Generate array of service times
         array_size = self._timeArrived.shape
@@ -32,6 +31,7 @@ class AoIQueue:
 
         # Make array for wait times in queue. The first value is 0
         self._delayTime = np.zeros(array_size)
+        self._queueWait = np.zeros(array_size)
         # Make array to keep track of when packets finish being served
         self._timeFinished = np.zeros(array_size)
         # Packet age array to keep track of the age of each packet
@@ -54,14 +54,14 @@ class AoIQueue:
             else:
                 if self._timeArrived[i] >= self._timeFinished[i-1]:
                     # Current packet arrived after last packed was finished serving
-                    self._delayTime[i] = 0  # It doesn't have to wait
+                    self._queueWait[i] = 0  # It doesn't have to wait
 
                 else:
                     # Packet arrived before last packet is finished serving
-                    self._delayTime[i] = self._timeFinished[i-1] - self._timeArrived[i]
+                    self._queueWait[i] = self._timeFinished[i-1] - self._timeArrived[i]
 
                 # Calculate when current packet gets served
-                packetServed = self._timeArrived[i] + self._delayTime[i] + self._serviceTimes[i]
+                packetServed = self._timeArrived[i] + self._queueWait[i] + self._serviceTimes[i]
                 self._timeFinished[i] = packetServed
 
                 currentPacketAge = packetServed - self._timeArrived[i]
@@ -104,6 +104,9 @@ class AoIQueue:
 
         # Calculate the averages
         self.avgAge = np.mean(self._age)
+        self.avgQueueWait = np.mean(self._queueWait) 
+
+        self._delayTime = self._queueWait + self._serviceTimes
         self.avgDelay = np.mean(self._delayTime)
 
         # Expected number of packets for the time window
@@ -117,8 +120,6 @@ class AoIQueue:
             self._tFinal, self._tStep))
         print("lambda: {:.3f} packets arriving per second".format(self._lambda))
         print("mu: {:.3f} packets served per second".format(self._mu))
-
-        print("{:d} packets sent".format(self._numPackets))
         
         print("Arrival".rjust(10), end='')
         print("Service".rjust(10), end='')
@@ -156,7 +157,7 @@ class AoIQueue:
     def exportSimulationParams(self, filename):
         outFile = open(filename, "w")
         outFile.write("timeArrived, serviceTimes\n")
-        for i in range(self._numPackets):
+        for i in range(len(self._timeArrived)):
             outFile.write("{:f},{:f}\n".format(self._timeArrived[i], self._serviceTimes[i]))
 
     # # Returns the average age of the simulation

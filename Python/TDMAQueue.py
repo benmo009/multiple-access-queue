@@ -181,9 +181,20 @@ class TDMAQueue:
         self._avgDelay = np.zeros_like(self._avgAge)
         self._avgQueueWait = np.zeros_like(self._avgAge)
         for source in range(self._numSources):
-            self._avgDelay[source] = np.mean(self._delay[source])
-            self._avgQueueWait[source] = np.mean(self._queueWait[source])
+            if len(self._delay[source]) != 0:
+                self._avgDelay[source] = np.mean(self._delay[source])
+            else:
+                self._avgDelay[source] = 0
+            
+            if len(self._queueWait[source]) != 0:
+                self._avgQueueWait[source] = np.mean(self._queueWait[source])
+            else:
+                self._avgQueueWait[source] = 0
 
+            if math.isnan(self._avgDelay[source]):
+                print("nan value!=================================================")
+
+        
         
     # Function to generate a service time and checks if the packet can be served       
     def ServePacket(self, source, currentTime, slotTransition, dt):
@@ -300,10 +311,6 @@ if __name__ == "__main__":
     tdma = TDMAQueue(tFinal, dt, slotWidth, arrivalRate, mu)
     tdma.plotAge()
     print(tdma.getAvgDelay())
-    print(tdma._delay)
-
-    print(tdma.getAvgQueueWait())
-    print(tdma._queueWait)
 
 
     # numSimulations = 1000

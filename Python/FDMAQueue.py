@@ -12,6 +12,7 @@ class FDMAQueue:
 
         self._queues = []
         self._avgAge = np.zeros((numSources,))
+        self._avgQueueWait = np.zeros((numSources,))
         self._avgDelay = np.zeros((numSources,))
         self.percentServed = np.zeros((numSources,))
         for i in range(self._numSources):
@@ -19,11 +20,15 @@ class FDMAQueue:
             mu = self._mu[i] 
             self._queues.append( AoIQueue(tFinal, tStep, lam, mu) )
             self._avgAge[i] = self._queues[i].avgAge
+            self._avgQueueWait[i] = self._queues[i].avgQueueWait
             self._avgDelay[i] = self._queues[i].avgDelay
             self.percentServed[i] = self._queues[i].percentServed
 
     def getAvgAge(self):
         return self._avgAge
+    
+    def getAvgQueueWait(self):
+        return self._avgQueueWait
 
     def getAvgDelay(self):
         return self._avgDelay
