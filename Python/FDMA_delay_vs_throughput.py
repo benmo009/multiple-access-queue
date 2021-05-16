@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from FDMAQueue import FDMAQueue
 
 
-def plot_delay_vs_throughput(throughput, delay, arrivalRate):
+def plot_vs_throughput(throughput, data, arrivalRate, ylabel, filename, xlim=(0.0002, 0.007), ylim=(0, 800), sum=True):
     fig = plt.figure()
     ax1 = fig.add_subplot(111)
     ax2 = ax1.twiny()
@@ -15,10 +15,15 @@ def plot_delay_vs_throughput(throughput, delay, arrivalRate):
     # Add some extra space for the second axis at the bottom
     fig.subplots_adjust(bottom=0.2)
 
-    ax1.plot(throughput[:,0], delay[:,0], label=r"Source 1, $\lambda=$%.3f" % arrivalRate[0])
-    ax1.plot(throughput[:,0], delay[:,1], label=r"Source 2, $\lambda=$%.3f" % arrivalRate[1])
-    ax1.plot(throughput[:,0], np.sum(delay, axis=1), "-", label="Sum Delay")    
-    ax1.set_xlabel("Throughput for source 1")
+    ax1.plot(throughput[:,0], data[:,0], 'r--', label=r"$\lambda_1=$%.3f" % arrivalRate[0])
+    ax1.plot(throughput[:,0], data[:,1],  'b-.', label=r"$\lambda_2=$%.3f" % arrivalRate[1])
+
+    if sum:
+        ax1.plot(throughput[:,0], np.sum(data, axis=1), "g-", label="Sum")  
+    ax1.set_xlim(xlim)
+    ax1.set_xlabel(r"$C_1$")
+    ax1.set_ylabel(ylabel, rotation=0)
+    ax1.set_ylim(ylim)
     ax1.legend()
 
     new_tick_locations = ax1.get_xticks()
@@ -40,13 +45,14 @@ def plot_delay_vs_throughput(throughput, delay, arrivalRate):
     ax2.spines["bottom"].set_visible(True)
 
     ax2.set_xticks(new_tick_locations)
-    ax2.set_xlim(ax1.get_xlim())
+    ax2.set_xlim(xlim)
     ax2.set_xticklabels(np.flip(new_tick_locations))
-    ax2.set_xlabel("Throughput for source 2")
+    ax2.set_xlabel(r"$C_2$")
 
     fig.tight_layout()
-
+    fig.savefig(filename + '.eps', format='eps')
     plt.show()
+    
 
 if __name__ =="__main__":
     # Set number of sources
@@ -82,6 +88,7 @@ if __name__ =="__main__":
     numSimulations = 1000
 
     avgDelay = np.zeros((bLength, numSources))
+    avgAge = np.zeros((bLength, numSources))
 
     start_time = time.time()
     for i in range(bLength):
@@ -89,8 +96,11 @@ if __name__ =="__main__":
             print("[%d/%d] Simulation %d" % (i, bLength, j))
             fdma = FDMAQueue(tFinal, tStep, numSources, arrivalRate, serviceRates[i,:])
             avgDelay[i,:] += fdma.getAvgDelay()
+            avgAge[i,:] += fdma.getAvgAge()
         
         avgDelay[i,:] /= numSimulations
+        avgAge[i,:] /= numSimulations
     print("Took %.3f seconds" % (time.time() - start_time) )
 
-    plot_delay_vs_throughput(throughput, avgDelay, arrivalRate)
+    plot_vs_throughput(throughput, avgDelay, arrivalRate, r"$T$", "FDMA_delay_vs_throughput", sum=True)
+    plot_vs_throughput(throughput, avgAge, arrivalRate, r"$\Delta$", "FDMA_age_vs_throughput", ylim=(300, 1000), sum=False)
